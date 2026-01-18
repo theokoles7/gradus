@@ -1,0 +1,49 @@
+[build-system]
+requires =          ["setuptools>=61.0"]
+build-backend =     "setuptools.build_meta"
+
+[project]
+name =              "gradus"
+dynamic =           ["version", "readme"]
+description =       "Experiments in quantifying image complxity and determining the efficacy of curriculum learning in image classification tasks."
+authors =           [
+                        { name = "Gabriel C. Trahan", email = "gabriel.trahan1@louisiana.edu" }
+                    ]
+license =           { text = "GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007" }
+requires-python =   ">=3.10"
+
+dependencies =      [
+                    ]
+
+classifiers =       [
+                        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+                        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+                        "Intended Audience :: Developers",
+                        "Operating System :: OS Independent",
+                        "Programming Language :: Python :: 3",
+                        "Programming Language :: Python :: 3.10",
+                        "Programming Language :: Python :: 3.11",
+                        "Programming Language :: Python :: 3.12",
+                        "Programming Language :: Python :: 3.13",
+                    ]
+
+[project.urls]
+Homepage =          "https://github.com/theokoles7/gradus"
+
+[project.scripts]
+gradus =            "gradus.__main__:gradus_entry_point"
+
+# ----------------------------
+# setuptools-specific config
+# ----------------------------
+
+[tool.setuptools]
+license-files =     ["LICENSE"]
+
+[tool.setuptools.packages.find]
+where =             ["."]
+include =           ["gradus*"]
+
+[tool.setuptools.dynamic]
+version =           { attr = "gradus.__meta__.__version__" }
+readme =            { file = ["README.md"], content-type = "text/markdown" }

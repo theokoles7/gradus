@@ -1,17 +1,21 @@
 # Build files
 build
-*.egg-info
 __pycache__
+*.egg-info
+
+# Workspace files
+.vscode
+.idea
 
 # Datasets
 data
 
 # Logs
-logs
+logs/
+*.log
 
-# Output/reports
-output/*
-!output/results.csv
+# Output & reports
+output/
 
 # Scratch files
 *scratch*

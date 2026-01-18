@@ -1,6 +1,3 @@
-# Image-Complexity-by-Wavelet-Decomposition
-Research project to determine the efficacy of wavelet decomposition in measuring image complexity.
+# Gradus
 
-## Acknowledgements:
-* Implemented using:
-    * [PyWavelets](https://pywavelets.readthedocs.io/en/latest/index.html) library
+Experiments in quantifying image complxity and determining the efficacy of curriculum learning in image classification tasks.
