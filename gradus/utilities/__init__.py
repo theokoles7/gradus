@@ -8,9 +8,13 @@ __all__ =   [
                 "configure_logger",
                 "get_logger",
 
+                # System
+                "get_system_core_count",
+
                 # Versioning
                 "BANNER",
             ]
 
 from gradus.utilities.banner    import BANNER
 from gradus.utilities.logging   import *
+from gradus.utilities.system    import *

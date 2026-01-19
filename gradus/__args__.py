@@ -8,7 +8,7 @@ __all__ = ["parse_gradus_arguments"]
 from argparse               import _ArgumentGroup, ArgumentParser, Namespace, _SubParsersAction
 from typing                 import Optional, Sequence
 
-from gradus.registration    import COMMAND_REGISTRY
+from gradus.registration    import COMMAND_REGISTRY, DATASET_REGISTRY
 
 def parse_gradus_arguments(
     args:       Optional[Sequence[str]] =   None,
@@ -74,6 +74,7 @@ def parse_gradus_arguments(
 
     # Register commands.
     COMMAND_REGISTRY.register_configurations(subparser = subparser)
+    DATASET_REGISTRY.register_configurations(subparser = subparser)
 
     # Parse arguments.
     return parser.parse_args(args, namespace)
