@@ -7,8 +7,11 @@ __pycache__
 .vscode
 .idea
 
+# Model checkpoints
+checkpoints/
+
 # Datasets
-data
+data/
 
 # Logs
 logs/

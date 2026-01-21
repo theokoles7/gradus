@@ -127,6 +127,7 @@ class Config(ABC):
         # Register this configuration as a sub-command under the sub-parser group provided.
         parser: ArgumentParser =    subparser.add_parser(
                                         name =          config.parser_id,
+                                        help =          config.parser_help,
                                         description =   config.parser_help
                                     )
         

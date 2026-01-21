@@ -38,6 +38,9 @@ class CommandRegistry(Registry):
         ## Args:
             * command_id    (str):  Identifier of command to whom arguments are being dispatched.
 
+        ## Raises:
+            * EntryPointNotConfiguredError: If command was not registered with an entry point.
+
         ## Returns:
             * Any:  Data returned from command process.
         """
