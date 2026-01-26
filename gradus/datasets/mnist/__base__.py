@@ -36,9 +36,6 @@ class MNIST(Dataset):
         **kwargs
     ):
         """# Intantiate MNIST Dataset."""
-        # Initialize dataset.
-        super(MNIST, self).__init__(id = "mnist")
-
         # Define transform.
         self._transform_:       Compose =       Compose([
                                                     # Convert images to tensors.
@@ -94,6 +91,6 @@ class MNIST(Dataset):
         self._num_classes_:     int =           len(self._classes_)
         self._size_:            int =           len(self._train_data_) + len(self._test_data_)
         self._width_:           int =           28
-
-        # Debug initialization.
-        self.__logger__.debug(f"Initialized {self}")
+        
+        # Initialize dataset.
+        super(MNIST, self).__init__(id = "mnist")

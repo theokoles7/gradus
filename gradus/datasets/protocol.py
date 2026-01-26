@@ -39,6 +39,12 @@ class Dataset(ABC):
         # Initialize logger.
         self.__logger__:    Logger =    get_logger(f"{id}-dataset")
 
+        # Define properties.
+        self._id_:  str =   id
+
+        # Debug initialization.
+        self.__logger__.debug(f"Initialized {self}")
+
     # PROPERTIES ===================================================================================
 
     @property
@@ -100,4 +106,4 @@ class Dataset(ABC):
 
     def __repr__(self) -> str:
         """# Dataset Object Representation"""
-        return f"""<Dataset({self._num_classes_} classes, {self._size_} samples)>"""
+        return f"""<{self._id_.upper()}Dataset({self._num_classes_} classes, {self._size_} samples)>"""

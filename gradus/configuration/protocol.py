@@ -149,6 +149,7 @@ class Config(ABC):
         # Create sub-parser.
         return  parser.add_subparsers(
                     title =         self.subparser_title,
+                    dest =          self.subparser_dest,
                     help =          self.subparser_help,
                     description =   self.subparser_help
                 )

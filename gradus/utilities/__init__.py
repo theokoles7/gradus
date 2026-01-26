@@ -11,6 +11,7 @@ __all__ =   [
                 # System
                 "determine_device",
                 "get_system_core_count",
+                "set_seed",
 
                 # Versioning
                 "BANNER",

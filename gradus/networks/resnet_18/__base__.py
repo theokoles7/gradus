@@ -28,7 +28,8 @@ class ResNet18(Module):
     def __init__(self,
         # Dataset
         input_shape:        Tuple[int, int, int],
-        num_classes:        int
+        num_classes:        int,
+        **kwargs
     ):
         """# Instantiate ResNet18 Neural Network.
 

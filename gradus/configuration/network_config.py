@@ -27,8 +27,8 @@ class NetworkConfig(Config):
         super(NetworkConfig, self).__init__(
             parser_id =         name,
             parser_help =       help,
-            subparser_title =   f"{name}-command",
-            subparser_help =    f"{name.upper()} neural network operations."
+            subparser_title =   f"dataset-id",
+            subparser_help =    f"Dataset with which neural network will operate."
         )
 
     # HELPERS ======================================================================================

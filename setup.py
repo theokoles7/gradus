@@ -59,6 +59,7 @@ setup(
                                         "setuptools",
                                         "torch",
                                         "torchvision",
+                                        "tqdm",
                                     ],
     entry_points =                  {
                                         "console_scripts":  [

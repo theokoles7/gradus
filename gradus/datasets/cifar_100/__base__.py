@@ -43,10 +43,7 @@ class CIFAR_100(Dataset):
             * batch_size    (int):  Number of samples to load into batches. Defaults to 64.
             * max_workers   (int):  Maximum number of workers allocated to data preprocessing. 
                                     Defaults to max system core count.
-        """
-        # Initialize dataset.
-        super(CIFAR_100, self).__init__(id = "cifar-100")
-        
+        """        
         # Define transform.
         self._transform_:       Compose =       Compose([
                                                     # Resize images to 32x32.
@@ -105,6 +102,6 @@ class CIFAR_100(Dataset):
         self._num_classes_:     int =           len(self._classes_)
         self._size_:            int =           len(self._train_data_) + len(self._test_data_)
         self._width_:           int =           32
-
-        # Debug initialization.
-        self.__logger__.debug(f"Initialized {self}")
+        
+        # Initialize dataset.
+        super(CIFAR_100, self).__init__(id = "cifar-100")
