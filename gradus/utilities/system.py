@@ -40,7 +40,7 @@ def determine_device(
 
 
 def get_system_core_count() -> int:
-    """# Get System Core Count
+    """# Get System Core Count.
 
     ## Returns:
         * (int):  Number of available CPU cores.

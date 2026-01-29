@@ -1,6 +1,6 @@
-"""# gradus.networks.resnet_34.base
+"""# gradus.networks.resnet_50.base
 
-ResNet-34 neural network implementation.
+ResNet-50 neural network implementation.
 """
 
 from logging                            import Logger
@@ -8,19 +8,19 @@ from typing                             import Tuple
 
 from torch                              import Tensor
 from torch.nn                           import Conv2d, Module
-from torchvision.models                 import resnet34, ResNet
+from torchvision.models                 import resnet50, ResNet
 
-from gradus.networks.resnet_34.__args__ import ResNet34Config
+from gradus.networks.resnet_50.__args__ import ResNet50Config
 from gradus.registration                import register_network
 from gradus.utilities                   import get_logger
 
 @register_network(
-    id =        "resnet-34",
-    config =    ResNet34Config,
-    tags =      ["residual", "cnn", "34-layers"]
+    id =        "resnet-50",
+    config =    ResNet50Config,
+    tags =      ["residual", "cnn", "50-layers"]
 )
-class ResNet34(Module):
-    """# Residual Neural Network with 34 Layers
+class ResNet50(Module):
+    """# Residual Neural Network with 50 Layers
     
     Reference: https://arxiv.org/pdf/1512.03385
     """
@@ -31,24 +31,24 @@ class ResNet34(Module):
         num_classes:        int,
         **kwargs
     ):
-        """# Instantiate ResNet34 Neural Network.
+        """# Instantiate ResNet50 Neural Network.
 
         ## Args:
             * input_shape   (Tuple[int, int, int]): Expected input shape (C, H, W).
             * num_classes   (int):                  Number of classes contained in dataset.
         """
         # Initialize network.
-        super(ResNet34, self).__init__()
+        super(ResNet50, self).__init__()
 
         # Initialize logger.
-        self.__logger__:    Logger =                get_logger("resnet-34")
+        self.__logger__:    Logger =                get_logger("resnet-50")
 
         # Define properties.
         self._input_shape_: Tuple[int, int, int] =  input_shape
         self._num_classes_: int =                   num_classes
 
-        # Initialize ResNet-34 model.
-        self.model:         ResNet =                resnet34(num_classes = num_classes)
+        # Initialize ResNet-50 model.
+        self.model:         ResNet =                resnet50(num_classes = num_classes)
         
         # Replace first convolving layer to match input shape.
         self.model.conv1 =                          Conv2d(
