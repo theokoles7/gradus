@@ -4,14 +4,19 @@ Defines various exceptions pertaining to registration operations.
 """
 
 __all__ =   [
+                # Protocol
+                "RegistrationError",
+
+                # Concrete
                 "DuplicateEntryError",
                 "EntryNotFoundError",
                 "EntryPointNotConfiguredError",
                 "ParserNotConfiguredError",
-                "RegistrationError",
                 "RegistryNotLoadedError"
             ]
 
+
+# PROTOCOL =========================================================================================
 
 class RegistrationError(Exception):
     """# Generic Registration Error.
@@ -20,6 +25,7 @@ class RegistrationError(Exception):
     """
     pass
 
+# CONCRETE =========================================================================================
 
 class DuplicateEntryError(RegistrationError):
     """# Duplicate Entry Error.

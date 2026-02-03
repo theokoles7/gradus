@@ -5,9 +5,11 @@ Abstract configuration & argument parsing handler implementation.
 
 __all__ = ["Config"]
 
-from abc        import ABC, abstractmethod
-from argparse   import ArgumentParser, Namespace, _SubParsersAction
-from typing     import Optional, Sequence, Tuple
+from abc                                import ABC, abstractmethod
+from argparse                           import ArgumentParser, Namespace, _SubParsersAction
+from typing                             import List, Optional, Sequence, Tuple
+
+from gradus.configuration.exceptions    import SubParserNotConfiguredError
 
 class Config(ABC):
     """# Abstract Configuration"""
@@ -36,17 +38,6 @@ class Config(ABC):
         self._parser_:          ArgumentParser =    ArgumentParser(
                                                         prog =          self.parser_id,
                                                         description =   self.parser_help
-                                                    )
-        
-        # If sub-parser properties are defined...
-        if self.subparser_title is not None:
-
-            # Initialize sub-parser.
-            self._subparser_:   _SubParsersAction = self._parser_.add_subparsers(
-                                                        title =         self.subparser_title,
-                                                        dest =          self.subparser_dest,
-                                                        help =          self.subparser_help,
-                                                        description =   self.subparser_help
                                                     )
             
         # Define arguments.
@@ -89,7 +80,7 @@ class Config(ABC):
     def parse_arguments(self,
         args:       Optional[Sequence[str]] =   None,
         namespace:  Optional[Namespace] =       None
-    ) -> Namespace:
+    ) -> Tuple[Namespace, List[str]]:
         """# Parse Defined Arguments.
 
         ## Args:
@@ -108,7 +99,7 @@ class Config(ABC):
     def register(
         cls:        "Config",
         subparser:  _SubParsersAction
-    ) -> Tuple[ArgumentParser, _SubParsersAction]:
+    ) -> ArgumentParser:
         """# Register Configuration Parser as Sub-Command.
 
         ## Args:
@@ -118,8 +109,7 @@ class Config(ABC):
                                                 configuration will be registered.
 
         ## Returns:
-            * ArgumentParser:       New argument parser, representing new sub-command.
-            * _SubParsersAction:    Corresponding sub-parser of new sub-command parser.
+            * ArgumentParser:   New argument parser, representing new sub-command.
         """
         # Instantiate this configuration class to expose properties.
         config: Config =            cls()
@@ -127,27 +117,42 @@ class Config(ABC):
         # Register this configuration as a sub-command under the sub-parser group provided.
         parser: ArgumentParser =    subparser.add_parser(
                                         name =          config.parser_id,
+                                        help =          config.parser_help,
                                         description =   config.parser_help
                                     )
-        
-        # If sub-parser properties are defined...
-        if config.subparser_title is not None:
-
-            # Initialize sub-parser.
-            subparser:  _SubParsersAction = parser.add_subparsers(
-                                                title =         config.subparser_title,
-                                                dest =          config.subparser_dest,
-                                                help =          config.subparser_help,
-                                                description =   config.subparser_help
-                                            )
             
         # Define this configuration's arguments under new parser.
         config._define_arguments_(parser = parser)
 
-        # Expose new parser & sub-parser.
-        return parser, subparser
+        # Expose new parser.
+        return parser
     
     # HELPERS ======================================================================================
+
+    def _create_subparser_(self,
+        parser: ArgumentParser
+    ) -> _SubParsersAction:
+        """# Create Sub-Parser Group.
+
+        ## Args:
+            * parser    (ArgumentParser):   Parser to whom sub-parser will be attributed.
+
+        ## Returns:
+            * _SubParsersAction:    New sub-parser group.
+        """
+        # If sub-parser is not configured...
+        if self.subparser_title is None:
+            
+            # Report error.
+            raise SubParserNotConfiguredError(parser_id = self.parser_id)
+        
+        # Create sub-parser.
+        return  parser.add_subparsers(
+                    title =         self.subparser_title,
+                    dest =          self.subparser_dest,
+                    help =          self.subparser_help,
+                    description =   self.subparser_help
+                )
 
     @abstractmethod
     def _define_arguments_(self,

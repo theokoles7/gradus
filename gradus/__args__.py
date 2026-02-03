@@ -52,20 +52,28 @@ def parse_gradus_arguments(
 
     logging.add_argument(
         "--logging-level",
-        dest =              "logging_level",
-        type =              str,
-        choices =           ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"],
-        default =           "INFO",
-        help =              """Minimum logging level (DEBUG < INFO < WARNING < ERROR < CRITICAL). 
-                            Defaults to "INFO"."""
+        dest =      "logging_level",
+        type =      str,
+        choices =   ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"],
+        default =   "INFO",
+        help =      """Minimum logging level (DEBUG < INFO < WARNING < ERROR < CRITICAL). 
+                    Defaults to "INFO"."""
+    )
+
+    logging.add_argument(
+        "--debug", "-v",
+        dest =      "logging_level",
+        action =    "store_const",
+        const =     "DEBUG",
+        help =      """Set logging level to DEBUG."""
     )
 
     logging.add_argument(
         "--logging-path",
-        dest =              "logging_path",
-        type =              str,
-        default =           "logs",
-        help =              """Path at which logs will be written. Defaults to "./logs/"."""
+        dest =      "logging_path",
+        type =      str,
+        default =   "logs",
+        help =      """Path at which logs will be written. Defaults to "./logs/"."""
     )
     
     # +============================================================================================+

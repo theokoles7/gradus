@@ -45,7 +45,7 @@ setup(
     version =                       get_version(),
     author =                        "Gabriel C. Trahan",
     author_email =                  "gabriel.trahan1.louisiana.edu",
-    description =                   """Experiments in quantifying image complxity and determining 
+    description =                   """Experiments in quantifying image complexity and determining 
                                     the efficacy of curriculum learning in image classification 
                                     tasks.""",
     long_description =               get_long_description(),
@@ -56,7 +56,12 @@ setup(
     packages =                      find_packages(),
     python_requires =               ">=3.10",
     install_requires =              [
+                                        "PyWavelets",
+                                        "scikit-learn",
                                         "setuptools",
+                                        "torch",
+                                        "torchvision",
+                                        "tqdm",
                                     ],
     entry_points =                  {
                                         "console_scripts":  [
