@@ -3,7 +3,7 @@
 Argument definitions & parsing for train command.
 """
 
-from argparse               import _ArgumentGroup, ArgumentParser, _SubParsersAction
+from argparse               import ArgumentParser, _SubParsersAction
 from typing                 import override
 
 from gradus.configuration   import CommandConfig

@@ -13,9 +13,15 @@ license =           { text = "GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 requires-python =   ">=3.10"
 
 dependencies =      [
+                        "matplotlib",
+                        "numpy",
                         "opencv-python",
+                        "pandas",
+                        "Pillow",
                         "PyWavelets",
                         "scikit-learn",
+                        "seaborn",
+                        "setuptools",
                         "torch",
                         "torchvision",
                         "tqdm",
