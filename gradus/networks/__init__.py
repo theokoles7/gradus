@@ -4,10 +4,22 @@ Neural network architecture implementations.
 """
 
 __all__ =   [
+                # Generic
+                "Autoencoder",
+                "CNN",
+
                 # ResNet
                 "ResNet18",
                 "ResNet34",
+                "ResNet50",
+                "ResNet101",
+                "ResNet152",
+
+                # Blocks
+                "ResNetBlock",
+                "ResNetBottleneck",
             ]
 
-from gradus.networks.resnet_18  import ResNet18
-from gradus.networks.resnet_34  import ResNet34
+from gradus.networks.autoencoder    import Autoencoder
+from gradus.networks.cnn            import CNN
+from gradus.networks.resnet         import *
