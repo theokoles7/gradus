@@ -18,7 +18,9 @@ logs/
 *.log
 
 # Output & reports
+analyses/
 output/
 
 # Scratch files
 *scratch*
+test_samples/

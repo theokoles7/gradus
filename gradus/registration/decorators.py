@@ -6,12 +6,13 @@ Function annotation decorators for registration of components.
 __all__ =   [
                 "register_command",
                 "register_dataset",
+                "register_metric",
                 "register_network",
             ]
 
 from typing                     import Callable, List, Type
 
-from gradus.configuration       import CommandConfig, DatasetConfig, NetworkConfig
+from gradus.configuration       import CommandConfig, DatasetConfig, MetricConfig, NetworkConfig
 
 
 def register_command(
@@ -90,6 +91,51 @@ def register_dataset(
 
         # Expose dataset class.
         return cls
+    
+    # Expose decorator.
+    return decorator
+
+
+def register_metric(
+    id:     str,
+    cls:    Type,
+    config: Type["MetricConfig"],
+    tags:   List[str] =             []
+) -> Callable:
+    """# Register Metric.
+
+    ## Args:
+        * id        (str):                  Metric identifier.
+        * fn        (Callable):             Metric quick-access funtion.
+        * config    (Type[MetricConfig]):   Metric configuration handler.
+        * tags      (List[str]):            Taxonomical metric keywords.
+
+    ## Returns:
+        * Callable: Registration decorator.
+    """
+    # Define decorator.
+    def decorator(
+        fn: Callable
+    ) -> Type:
+        """# Metric Registration Decorator.
+
+        ## Args:
+            * fn    (Callable): Metric quick-access function.
+        """
+        # Load registry.
+        from gradus.registration    import METRIC_REGISTRY
+
+        # Register metric.
+        METRIC_REGISTRY.register(
+            entry_id =  id,
+            cls =       cls,
+            fn =        fn,
+            config =    config,
+            tags =      tags
+        )
+
+        # Expose metric class.
+        return fn
     
     # Expose decorator.
     return decorator

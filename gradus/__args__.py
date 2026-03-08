@@ -61,19 +61,19 @@ def parse_gradus_arguments(
     )
 
     logging.add_argument(
-        "--debug", "-v",
-        dest =      "logging_level",
-        action =    "store_const",
-        const =     "DEBUG",
-        help =      """Set logging level to DEBUG."""
-    )
-
-    logging.add_argument(
         "--logging-path",
         dest =      "logging_path",
         type =      str,
         default =   "logs",
         help =      """Path at which logs will be written. Defaults to "./logs/"."""
+    )
+
+    logging.add_argument(
+        "--debug", "-v",
+        dest =      "logging_level",
+        action =    "store_const",
+        const =     "DEBUG",
+        help =      """Set logging level to DEBUG."""
     )
     
     # +============================================================================================+
