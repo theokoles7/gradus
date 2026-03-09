@@ -68,7 +68,7 @@ class ResNet(Module):
         self._avg_pool_:        AdaptiveAvgPool2d = AdaptiveAvgPool2d(
                                                         output_size =   (1, 1)
                                                     )
-        self._relu_:            ReLU =              ReLU(in_place = True)
+        self._relu_:            ReLU =              ReLU(inplace = True)
         self._fc_:              Linear =            Linear(
                                                         in_features =   512 * block.expansion,
                                                         out_features =  num_classes
@@ -174,7 +174,7 @@ class ResNet(Module):
             # Define downsampling layer to match dimensions.
             downsample: Sequential =    Sequential(
                                             Conv2d(
-                                                in_channels =   self.inplanes,
+                                                in_channels =   self._in_planes_,
                                                 out_channels =  planes * block.expansion,
                                                 stride =        stride,
                                                 kernel_size =   1,
@@ -186,7 +186,12 @@ class ResNet(Module):
                                         )
 
         # Initialize list of layers.
-        layers:             List[Module] =      []
+        layers:             List[Module] =      [block(
+                                                    in_planes =     self._in_planes_,
+                                                    planes =        planes,
+                                                    stride =        stride,
+                                                    downsample =    downsample
+                                                )]
 
         # Update in planes.
         self._in_planes_:   int =               planes * block.expansion

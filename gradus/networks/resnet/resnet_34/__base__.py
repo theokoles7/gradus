@@ -1,4 +1,4 @@
-"""# gradus.networks.resnet.resnet_34
+"""# gradus.networks.resnet.resnet_34.base
 
 ResNet-34 neural network implementation.
 """
@@ -23,7 +23,8 @@ class ResNet34(ResNet):
     def __init__(self,
         input_shape:        Tuple[int, ...],
         num_classes:        int,
-        zero_init_residual: bool =              False
+        zero_init_residual: bool =              False,
+        **kwargs
     ):
         """# Instantiate Residual Neural Network.
 

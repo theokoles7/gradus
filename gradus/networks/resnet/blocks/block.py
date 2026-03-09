@@ -19,10 +19,10 @@ class ResNetBlock(Module):
     """# Residual Neural Network Block"""
 
     # Initialize block ID counter.
-    block_id:       count = count()
+    block_id:   count = count()
 
     # Define expansion property.
-    _expansion_:    int =   1
+    expansion:  int =   1
 
     def __init__(self,
         in_planes:  int,
@@ -85,13 +85,6 @@ class ResNetBlock(Module):
         
         # Debug initialization.
         self.__logger__.debug(f"Initialized {self}")
-
-    # PROPERTIES ===================================================================================
-
-    @property
-    def expansion(self) -> int:
-        """# Expansion Factor of Block"""
-        return self._expansion_
 
     # METHODS ======================================================================================
 
