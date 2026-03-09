@@ -3,3 +3,4 @@
 # Gradus Documentation
 
 * ### [Setup & Installation](./setup.md)
+* ### [Cirricula](./curricula/README.md)
