@@ -8,13 +8,14 @@ __all__ =   [
                 "time_to_convergence",
             ]
 
-from typing             import List
+from typing             import List, Union
 
-from torch              import Tensor
+from torch              import device as t_device, Tensor
 from torch.nn           import MSELoss
 from torch.optim        import SGD
 
 from gradus.networks    import Autoencoder
+from gradus.utilities   import determine_device
 
 class TimeToConvergence():
     """# Time-to-Convergence Measurement"""
@@ -24,33 +25,38 @@ class TimeToConvergence():
         sample:         Tensor, *,
 
         # Calculation parameters
-        max_iterations: int =   1000,
-        threshold:      float = 1e-3,
-        window:         int =   5,
-        learning_rate:  float = 0.05
+        max_iterations: int =                   1000,
+        threshold:      float =                 1e-3,
+        window:         int =                   5,
+        learning_rate:  float =                 0.05,
+        device:         Union[str, t_device] =  "auto"
     ):
         """# Calculate Sample's Time-to-Convergence Metric.
 
         ## Args:
-            * sample            (Tensor):   Sample whose convergence time is being measured.
-            * max_iterations    (int):      Maximum number of iterations allowed before abandoning
-                                            measurement attempt. Defaults to 1000.
-            * threshold         (float):    Threshold under which the loss delta must fall to be
-                                            considered "converged". Defaults to 1e-3.
-            * window            (int):      Number of consecutive iterations for which loss delta
-                                            must remain under threshold to achieve "stable
-                                            convergence". Defaults to 5.
-            * learning_rate     (float):    Learning rate with which optimizer will be configured.
-                                            Defaults to 0.05.
+            * sample            (Tensor):       Sample whose convergence time is being measured.
+            * max_iterations    (int):          Maximum number of iterations allowed before 
+                                                abandoning measurement attempt. Defaults to 1000.
+            * threshold         (float):        Threshold under which the loss delta must fall to be 
+                                                considered "converged". Defaults to 1e-3.
+            * window            (int):          Number of consecutive iterations for which loss 
+                                                delta must remain under threshold to achieve "stable 
+                                                convergence". Defaults to 5.
+            * learning_rate     (float):        Learning rate with which optimizer will be 
+                                                configured. Defaults to 0.05.
+            * device            (str | device): Torch computation device. Defaults to "auto".
         """
         # Define properties.
+        self._device_:              t_device =      determine_device(device = device)
         self._sample_:              Tensor =        sample
         self._max_iterations_:      int =           max_iterations
         self._threshold_:           float =         threshold
         self._window_:              int =           window
         self._learning_rate_:       float =         learning_rate
         self._input_channels_:      int =           1 if sample.dim() == 2 else sample.shape[0]
-        self._model_:               Autoencoder =   Autoencoder(channels = self._input_channels_)
+        self._model_:               Autoencoder =   Autoencoder(
+                                                        channels =  self._input_channels_
+                                                    ).to(self._device_)
 
         # Initialize metric tracking.
         self._iteration_:           int =           0
@@ -166,24 +172,26 @@ def time_to_convergence(
     sample:         Tensor, *,
 
     # Calculation parameters
-    max_iterations: int =   1000,
-    threshold:      float = 1e-3,
-    window:         int =   5,
-    learning_rate:  float = 0.05
+    max_iterations: int =                   1000,
+    threshold:      float =                 1e-3,
+    window:         int =                   5,
+    learning_rate:  float =                 0.05,
+    device:         Union[str, t_device] =  "auto"
 ) -> int:
     """# Calculate Sample's Time-to-Convergence Metric.
 
     ## Args:
-        * sample            (Tensor):   Sample whose convergence time is being measured.
-        * max_iterations    (int):      Maximum number of iterations allowed before abandoning
-                                        measurement attempt. Defaults to 1000.
-        * threshold         (float):    Threshold under which the loss delta must fall to be
-                                        considered "converged". Defaults to 1e-3.
-        * window            (int):      Number of consecutive iterations for which loss delta
-                                        must remain under threshold to achieve "stable
-                                        convergence". Defaults to 5.
-        * learning_rate     (float):    Learning rate with which optimizer will be configured.
-                                        Defaults to 0.05.
+        * sample            (Tensor):       Sample whose convergence time is being measured.
+        * max_iterations    (int):          Maximum number of iterations allowed before 
+                                            abandoning measurement attempt. Defaults to 1000.
+        * threshold         (float):        Threshold under which the loss delta must fall to be 
+                                            considered "converged". Defaults to 1e-3.
+        * window            (int):          Number of consecutive iterations for which loss 
+                                            delta must remain under threshold to achieve "stable 
+                                            convergence". Defaults to 5.
+        * learning_rate     (float):        Learning rate with which optimizer will be 
+                                            configured. Defaults to 0.05.
+        * device            (str | device): Torch computation device. Defaults to "auto".
 
     ## Returns:
         * int:  Number of iterations required for loss convergence.

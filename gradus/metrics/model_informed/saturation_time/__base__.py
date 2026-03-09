@@ -9,13 +9,14 @@ __all__ =   [
                 "time_to_saturation",
             ]
 
-from typing             import Dict, List
+from typing             import Dict, List, Union
 
-from torch              import Tensor
+from torch              import device as t_device, Tensor
 from torch.nn           import Module, MSELoss
 from torch.optim        import SGD
 
 from gradus.networks    import Autoencoder
+from gradus.utilities   import determine_device
 
 class TimeToSaturation():
     """# Time-to-Saturation Measurement"""
@@ -25,25 +26,26 @@ class TimeToSaturation():
         sample:         Tensor, *,
 
         # Calculation parameters
-        max_iterations: int =   1000,
-        threshold:      float = 1e-3,
-        window:         int =   5,
-        learning_rate:  float = 0.05
-    ) -> int:
-        """# Calculate Sample's Time-to-Saturation Metric.
+        max_iterations: int =                   1000,
+        threshold:      float =                 1e-3,
+        window:         int =                   5,
+        learning_rate:  float =                 0.05,
+        device:         Union[str, t_device] =  "auto"
+    ):
+        """# Calculate Sample's Time-to-Convergence Metric.
 
         ## Args:
-            * sample            (Tensor):   Sample whose saturation time is being measured.
-            * max_iterations    (int):      Maximum number of iterations allowed before abandoning 
-                                            measurement attempt. Defaults to 1,000.
-            * threshold         (float):    Threshold under which the delta of the weights' L2 norms 
-                                            must fall to be considered "saturated". Defaults to 
-                                            1e-3.
-            * window            (int):      Number of consecutive iterations for which delta must 
-                                            remain under threshold to achieve "stable saturation". 
-                                            Defaults to 5.
-            * learning_rate     (float):    Learning rate with which optimizer will be configured. 
-                                            Defaults to 0.5.
+            * sample            (Tensor):       Sample whose convergence time is being measured.
+            * max_iterations    (int):          Maximum number of iterations allowed before 
+                                                abandoning measurement attempt. Defaults to 1000.
+            * threshold         (float):        Threshold under which the loss delta must fall to be 
+                                                considered "converged". Defaults to 1e-3.
+            * window            (int):          Number of consecutive iterations for which loss 
+                                                delta must remain under threshold to achieve "stable 
+                                                convergence". Defaults to 5.
+            * learning_rate     (float):        Learning rate with which optimizer will be 
+                                                configured. Defaults to 0.05.
+            * device            (str | device): Torch computation device. Defaults to "auto".
         """
         # Define properties.
         self._sample_:                  Tensor =                    sample
@@ -274,25 +276,26 @@ def time_to_saturation(
     sample:         Tensor, *,
 
     # Calculation parameters
-    max_iterations: int =   1000,
-    threshold:      float = 1e-3,
-    window:         int =   5,
-    learning_rate:  float = 0.05
+    max_iterations: int =                   1000,
+    threshold:      float =                 1e-3,
+    window:         int =                   5,
+    learning_rate:  float =                 0.05,
+    device:         Union[str, t_device] =  "auto"
 ) -> int:
-    """# Calculate Sample's Time-to-Saturation Metric.
+    """# Calculate Sample's Time-to-Convergence Metric.
 
     ## Args:
-        * sample            (Tensor):   Sample whose saturation time is being measured.
-        * max_iterations    (int):      Maximum number of iterations allowed before abandoning 
-                                        measurement attempt. Defaults to 1,000.
-        * threshold         (float):    Threshold under which the delta of the weights' L2 norms 
-                                        must fall to be considered "saturated". Defaults to 
-                                        1e-3.
-        * window            (int):      Number of consecutive iterations for which delta must 
-                                        remain under threshold to achieve "stable saturation". 
-                                        Defaults to 5.
-        * learning_rate     (float):    Learning rate with which optimizer will be configured. 
-                                        Defaults to 0.5.
+        * sample            (Tensor):       Sample whose convergence time is being measured.
+        * max_iterations    (int):          Maximum number of iterations allowed before 
+                                            abandoning measurement attempt. Defaults to 1000.
+        * threshold         (float):        Threshold under which the loss delta must fall to be 
+                                            considered "converged". Defaults to 1e-3.
+        * window            (int):          Number of consecutive iterations for which loss 
+                                            delta must remain under threshold to achieve "stable 
+                                            convergence". Defaults to 5.
+        * learning_rate     (float):        Learning rate with which optimizer will be 
+                                            configured. Defaults to 0.05.
+        * device            (str | device): Torch computation device. Defaults to "auto".
 
     ## Returns:
         * int:  Number of iterations required for sample saturation.
