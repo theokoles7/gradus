@@ -101,6 +101,74 @@ class TrainingRecord():
         # Debug record.
         self.__logger__.debug(f"Recorded Epoch {epoch}: {self._epochs_[epoch]}")
 
+    def save_to_master(self,
+        network_id: str,
+        dataset_id: str,
+        device:     str,
+        seed:       int,
+        epochs:     int,
+        accuracy:   float,
+        loss:       float,
+        metric:     str =   None,
+        sampler:    str =   None,
+        order:      str =   None
+    ) -> None:
+        """# Save to Master Record.
+
+        ## Args:
+            * network_id    (str):      Network identifier.
+            * dataset_id    (str):      Dataset identifier.
+            * device        (str):      Device used for run.
+            * seed          (int):      Random seed used for run.
+            * epochs        (int):      Number of epochs trained.
+            * accuracy      (float):    Final validation accuracy.
+            * loss          (float):    Final validation loss.
+            * metric        (str):      Curriculum metric ID, if any.
+            * sampler       (str):      Curriculum sampler ID, if any.
+            * order         (str):      Curriculum ordering ID, if any.
+        """
+        from csv    import DictWriter
+        
+        # Define CSV fields.
+        FIELDS:         List[str] = [
+                                        "network_id", "dataset_id", "device", "seed", "epochs",
+                                        "accuracy", "loss", "metric", "sampler", "order"
+                                    ]
+        
+        # Resolve results CSV path.
+        results_path:   Path =      Path("results/master_record.csv")
+
+        # Ensure path exists.
+        results_path.parent.mkdir(parents = True, exist_ok = True)
+
+        # If file does not exist or is empty...
+        if not results_path.exists() or results_path.stat().st_size == 0:
+
+            # Open file for writing.
+            with open(results_path, "w", newline = "") as f:
+
+                # Write header.
+                DictWriter(f, fieldnames = FIELDS).writeheader()
+
+        # Open file for writing.
+        with open(results_path, "a", newline = "") as f:
+
+            # Write record.
+            DictWriter(f, fieldnames = FIELDS).writerow({
+                "network_id":   network_id,
+                "dataset_id":   dataset_id,
+                "seed":         seed,
+                "device":       str(device),
+                "epochs":       epochs,
+                "metric":       metric,
+                "sampler":      sampler,
+                "order":        order,
+                "accuracy":     accuracy,
+                "loss":         loss,
+            })
+
+        self.__logger__.info(f"Result saved to master record at {results_path.absolute}")
+
     def to_dict(self) -> Dict[str, Any]:
         """# Dictionary Representation of Training Record.
 

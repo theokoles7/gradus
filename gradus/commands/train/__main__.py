@@ -175,3 +175,17 @@ def train_entry_point(
             f"Validation Accuracy = {val_accuracy:.4f}; "
             f"Validation Loss = {val_loss:.4f}"
         )
+
+    # Save results to master record.
+    train_record.save_to_master(
+        network_id =    network_id,
+        dataset_id =    dataset_id,
+        seed =          seed,
+        device =        device,
+        epochs =        epochs,
+        metric =        kwargs.get("metric"),
+        sampler =       kwargs.get("sampler"),
+        order =         kwargs.get("order"),
+        accuracy =      val_accuracy,
+        loss =          val_loss
+    )

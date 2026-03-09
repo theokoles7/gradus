@@ -1,14 +1,14 @@
-"""# gradus.commands.analyze_dataset.main
+"""# gradus.commands.score_dataset.main
 
 Main process entry point for score-dataset command.
 """
 
-__all__ = ["analyze_dataset_entry_point"]
+__all__ = ["score_dataset_entry_point"]
 
-from typing                                     import Dict
+from pathlib                                    import Path
+from typing                                     import Any, Dict, List, Union
 
 from gradus.commands.score_dataset.__args__     import ScoreDatasetConfig
-from gradus.metrics                             import *
 from gradus.registration                        import register_command
 
 @register_command(
@@ -17,136 +17,108 @@ from gradus.registration                        import register_command
 )
 def score_dataset_entry_point(
     dataset_id:     str,
-    output_path:    str =   "analyses/datasets",
+    metrics:        List[str] =         ["all"],
+    output_path:    Union[str, Path] =  "analysis/datasets",
+    device:         str =               "auto",
+    seed:           int =               1,
     *args,
     **kwargs
-) -> Dict[int, Dict]:
+) -> Path:
     """# Score Dataset and Compute Image Complexity Metrics.
 
     ## Args:
-        * dataset_id    (str):  Identifier of dataset being analyzed.
-        * output_path   (str):  Path at which dataset analysis results will be written. Defaults 
-                                to "./analyses/datasets/".
-    """
-    from json                   import dump
-    from logging                import Logger
-    from pathlib                import Path
-    from typing                 import List
+        * dataset_id    (str):          Identifier of dataset being analyzed.
+        * metrics       (List[str]):    Metric(s) to compute. Defaults to all registered metrics.
+        * output_path   (str | Path):   Directory under which results will be written. Defaults to 
+                                        "./analysis/datasets/".
+        * device        (str):          Torch computation device. Defautls to "auto".
+        * seed          (int):          Random number generation seed. Defaults to 1.
 
-    from matplotlib.pyplot      import subplots, xticks
-    from pandas                 import DataFrame, melt
-    from seaborn                import barplot
+    ## Returns:
+        * Path: Path at which CSV results file was saved.
+    """
+    from csv                    import DictWriter
+    from logging                import Logger
+
     from torch                  import Tensor
     from tqdm                   import tqdm
 
     from gradus.datasets        import Dataset
-    from gradus.registration    import DATASET_REGISTRY
-    from gradus.utilities       import get_logger
+    from gradus.registration    import DATASET_REGISTRY, METRIC_REGISTRY
+    from gradus.utilities       import determine_device, get_logger, set_seed
 
-    # Form output path.
-    output_path:    Path =              Path(output_path) / dataset_id
+    # Set device & seed.
+    determine_device(device); set_seed(seed)
 
     # Initialize logger.
-    logger:         Logger =            get_logger("dataset-analysis-process")
+    logger:         Logger =    get_logger("dataset-scoring")
+
+    # Form output path.
+    output_dir:     Path =      Path(output_path) / dataset_id
 
     # Load dataset.
-    dataset:        Dataset =           DATASET_REGISTRY.load_dataset(dataset_id)
+    dataset:        Dataset =   DATASET_REGISTRY.load_dataset(dataset_id, **kwargs)
 
-    # Initialize analysis mapping.
-    analysis:       Dict[int, Dict] =   {i: {} for i in range(len(dataset.train_data))}
+    # Ensure path exists.
+    output_dir.mkdir(parents = True, exist_ok = True)
 
-    # For each sample in the dataset...
-    for i in tqdm(
-        range(len(dataset.train_data)),
-        desc = f"Analyzing {dataset_id.upper()}",
-        unit = "sample(s)"
-    ):
+    # Normalize metrics argument.
+    metrics_list:   List[str] = metrics if isinstance(metrics, list) else [metrics]
 
-        # Get sample.
-        sample: Tensor =                            dataset.train_data[i][0]
+    # Resolve which metrics to run.
+    scheduled:      List[str] =         METRIC_REGISTRY.list_entries()  \
+                                        if "all" in metrics_list        \
+                                        else [m for m in metrics_list if m in METRIC_REGISTRY]
 
-        # Take note of the class of the sample.
-        analysis[i]["class"] =                      dataset.train_data[i][1]
+    # For any unrecognized metrics...
+    for uid in [m for m in metrics_list if m != "all" and m not in METRIC_REGISTRY]:
 
-        # Compute and store image complexity metrics.
-        analysis[i]["color_variance"] =             color_variance(image =    sample[0])
-        analysis[i]["compression_ratio"] =          compression_ratio(image = sample[0])
-        analysis[i]["edge_density"] =               edge_density(image =      sample[0])
-        rf, cf, of =                                spatial_frequency(image = sample[0])
-        analysis[i]["wavelet_energy"] =             wavelet_energy(image =    sample[0]).total_energy
-        analysis[i]["wavelet_entropy"] =            wavelet_entropy(image =   sample[0]).entropy
-        
-        # Unpack the tuple (RF, CF, OF).
-        analysis[i]["spatial_frequency_row"] =      rf
-        analysis[i]["spatial_frequency_column"] =   cf
-        analysis[i]["spatial_frequency_overall"] =  of
+        # Warn that it will not be computed.
+        logger.warning(f"Metric not registered, skipping: {uid}")
 
-    # Ensure outupt path's parent directory exists.
-    output_path.mkdir(parents = True, exist_ok = True)
+    # Log process initiation.
+    logger.info(f"Scoring {dataset_id.upper()} ({len(dataset.train_data)} samples; metrics: {scheduled})")
 
-    # Save analysis to JSON file.
-    with open(output_path / f"{dataset_id}-complexity-metrics.json", "w") as f: dump(obj = analysis, fp = f, indent = 2)
+    # Determine CSV path.
+    csv_path:       Path =              output_dir / f"{dataset_id}-complexity-metrics.csv"
 
-    # Log save location.
-    logger.info(f"Metric scores saved to: {output_path.absolute()}/{dataset_id}-complexity-metrics.json")
+    # Define CSV columns.
+    columns:        List[str] =         ["index", "label"] + scheduled
 
-    # Convert analysis to DataFrame.
-    df:             DataFrame =         DataFrame.from_dict(analysis, orient = "index")
+    # Open CSV for incremental writing.
+    with open(csv_path, "w", newline = "") as csv_file:
 
-    # Save DataFrame to CSV file.
-    df.to_csv(output_path / f"{dataset_id}-complexity-metrics.csv")
+        # Initialize dictionary writer.
+        writer = DictWriter(csv_file, fieldnames = columns); writer.writeheader()
 
-    # Plot distributions of standard metrics by class.
-    metrics:        List[str] =         ["color_variance", "compression_ratio", "edge_density", "wavelet_energy", "wavelet_entropy"]
+        # For each sample...
+        for i in tqdm(
+            range(len(dataset.train_data)),
+            desc =  f"Scoring {dataset_id.upper()}",
+            unit =  "sample(s)"
+        ):
+            # Unpack sample & label.
+            sample: Tensor =            dataset.train_data[i][0]
+            label:  Any =               dataset.train_data[i][1]
 
-    # For each metric analyzed...
-    for metric in metrics:
+            # Initialize row with index & label.
+            row:    Dict[str, Any] =    {"index": i, "label": label}
 
-        # Create a wide figure to accommodate all 100 classes.
-        fig, ax = subplots(figsize = (20, 6))
-        
-        # Use barplot to show mean with error bars per class.
-        barplot(x = "class", y = metric, data = df, ax = ax, errorbar = "sd")
-        
-        ax.set_title(f"{metric.replace('_', ' ').title()} by Class")
-        ax.set_xlabel("Class")
-        ax.set_ylabel(metric.replace('_', ' ').title())
-        
-        # Rotate x-axis labels for readability.
-        xticks(rotation = 90, fontsize = 8)
-        fig.tight_layout()
-        
-        # Save figure.
-        fig.savefig(output_path / f"{dataset_id}-{metric}-by-class.png")
+            # Compute each metric, isolating failures.
+            # For each scheduled metric...
+            for metric_id in scheduled:
 
-        # Log save location.
-        logger.info(f"Saved {metric} by class plot to: {output_path.absolute()}/{dataset_id}-{metric}-by-class.png")
+                # Calculate metric for sample.
+                try: row[metric_id] = METRIC_REGISTRY.get_entry(metric_id).fn(sample)
 
-    # Melt spatial frequency columns for grouped visualization.
-    df_melted:      DataFrame =         melt(
-                                            df[["class"] + ["spatial_frequency_row", "spatial_frequency_column", "spatial_frequency_overall"]],
-                                            id_vars =       ["class"],
-                                            var_name =      "frequency_type",
-                                            value_name =    "value"
-                                        )
+                # Record failed caluclations as NAN.
+                except Exception as e: row[metric_id] = float("nan")
 
-    # Rename frequency types for better readability.
-    df_melted["frequency_type"] = df_melted["frequency_type"].str.replace("spatial_frequency_", "").str.title()
+            # Write row to file.
+            writer.writerow(row)
 
-    # Plot all spatial frequency components in one wider plot.
-    fig, ax = subplots(figsize = (20, 6))
-    barplot(x = "class", y = "value", hue = "frequency_type", data = df_melted, ax = ax, errorbar = "sd")
-    ax.set_title("Spatial Frequency by Class")
-    ax.set_xlabel("Class")
-    ax.set_ylabel("Frequency")
-    xticks(rotation = 90, fontsize = 8)
-    fig.tight_layout()
+    # Communicate save location.
+    logger.info(f"Results saved to: {csv_path.absolute()}")
 
-    # Save figure.
-    fig.savefig(output_path / f"{dataset_id}-spatial-frequency-by-class.png")
-
-    # Log save location.
-    logger.info(f"Saved spatial frequency by class plot to: {output_path.absolute()}/{dataset_id}-spatial-frequency-by-class.png")
-
-    # Return analysis.
-    return analysis
+    # Provide results to outer process.
+    return csv_path

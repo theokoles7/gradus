@@ -32,13 +32,23 @@ class ScoreDatasetConfig(CommandConfig):
         ## Args:
             * parser    (ArgumentParser):   Parser to whom arguments will be attributed.
         """
-        from gradus.registration    import DATASET_REGISTRY
+        from gradus.registration    import DATASET_REGISTRY, METRIC_REGISTRY
 
         parser.add_argument(
             "dataset_id",
             type =      str,
             choices =   DATASET_REGISTRY.list_entries(),
             help =      """Identifier of dataset being analyzed."""
+        )
+
+        parser.add_argument(
+            "--metrics",
+            dest =      "metrics",
+            type =      str,
+            nargs =     "+",
+            choices =   METRIC_REGISTRY.list_entries() + ["all"],
+            default =   ["all"],
+            help =      """Metric(s) being calculated for sample."""
         )
         
         parser.add_argument(
@@ -48,4 +58,21 @@ class ScoreDatasetConfig(CommandConfig):
             default =   "analyses/datasets",
             help =      """Path at which dataset analysis results will be written. Defaults to 
                         "./analyses/datasets/"."""
+        )
+
+        parser.add_argument(
+            "--seed",
+            dest =      "seed",
+            type =      int,
+            default =   1,
+            help =      """Random number generation seed. Defaults to 1."""
+        )
+
+        parser.add_argument(
+            "--device",
+            dest =      "device",
+            type =      str,
+            choices =   ["auto", "cpu", "cuda"],
+            default =   "auto",
+            help =      """Torch computation device. Defaults to "auto"."""
         )

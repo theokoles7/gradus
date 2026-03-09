@@ -4,7 +4,7 @@ Argument definitions & parsing for score-sample command.
 """
 
 from argparse               import ArgumentParser
-from typing                 import override
+from typing                 import List, override
 
 from gradus.configuration   import CommandConfig
 
@@ -30,6 +30,8 @@ class ScoreSampleConfig(CommandConfig):
         ## Args:
             * parser    (ArgumentParser):   Parser to whom arguments will be attributed.
         """
+        from gradus.registration    import METRIC_REGISTRY
+
         parser.add_argument(
             "sample_path",
             type =      str,
@@ -41,17 +43,24 @@ class ScoreSampleConfig(CommandConfig):
             dest =      "metrics",
             type =      str,
             nargs =     "+",
-            choices =   [
-                            "all",
-                            "color-variance",
-                            "compression-ratio",
-                            "edge-density",
-                            "spatial-frequency",
-                            "time-to-convergence",
-                            "time-to-saturation",
-                            "wavelet-energy",
-                            "wavelet-entropy"
-                        ],
-            default =   "all",
+            choices =   METRIC_REGISTRY.list_entries() + ["all"],
+            default =   ["all"],
             help =      """Metric(s) being calculated for sample."""
+        )
+
+        parser.add_argument(
+            "--seed",
+            dest =      "seed",
+            type =      int,
+            default =   1,
+            help =      """Random number generation seed. Defaults to 1."""
+        )
+
+        parser.add_argument(
+            "--device",
+            dest =      "device",
+            type =      str,
+            choices =   ["auto", "cpu", "cuda"],
+            default =   "auto",
+            help =      """Torch computation device. Defaults to "auto"."""
         )
