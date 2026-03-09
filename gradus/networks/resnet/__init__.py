@@ -16,7 +16,7 @@ __all__ =   [
                 "ResNetBottleneck",
             ]
 
-from gradus.networks.resnet.blocks  import *
+from gradus.networks.resnet.blocks      import *
 
 from gradus.networks.resnet.resnet_18   import ResNet18
 from gradus.networks.resnet.resnet_34   import ResNet34

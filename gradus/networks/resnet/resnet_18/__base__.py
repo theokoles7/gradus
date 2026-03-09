@@ -1,27 +1,24 @@
-"""# gradus.networks.resnet.resnet_101
+"""# gradus.networks.resnet.resnet_18
 
-ResNet-101 neural network implementation.
+ResNet-18 neural network implementation.
 """
 
-__all__ = ["ResNet101"]
+__all__ = ["ResNet18"]
 
-from typing                             import Tuple
+from typing                                     import Tuple
 
-from gradus.configuration               import NetworkConfig
-from gradus.networks.resnet.__base__    import ResNet
-from gradus.networks.resnet.blocks      import ResNetBlock
-from gradus.registration                import register_network
+from gradus.networks.resnet.__base__            import ResNet
+from gradus.networks.resnet.blocks              import ResNetBlock
+from gradus.networks.resnet.resnet_18.__args__  import ResNet18Config
+from gradus.registration                        import register_network
 
 @register_network(
-    id =        "resnet-101",
-    config =    NetworkConfig(
-                    name = "resnet-101",
-                    help = "Residual neural network with 101 learnable layers."
-                ),
-    tags =      ["residual", "cnn", "101-layers"]
+    id =        "resnet-18",
+    config =    ResNet18Config,
+    tags =      ["residual", "cnn", "18-layers"]
 )
-class ResNet101(ResNet):
-    """# 101-Layer Residual Neural Network"""
+class ResNet18(ResNet):
+    """# 18-Layer Residual Neural Network"""
 
     def __init__(self,
         input_shape:        Tuple[int, ...],
@@ -37,9 +34,9 @@ class ResNet101(ResNet):
                                                     Defaults to False.
         """
         # Initialize network.
-        super(ResNet101, self).__init__(
+        super(ResNet18, self).__init__(
             block =                 ResNetBlock,
-            layers =                [3, 4, 23, 3],
+            layers =                [2, 2, 2, 2],
             input_shape =           input_shape,
             num_classes =           num_classes,
             zero_init_residual =    zero_init_residual
