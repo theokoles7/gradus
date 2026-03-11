@@ -31,7 +31,7 @@ def score_sample_entry_point(
         * metrics       (List[str]):    Metric(s) to compute. Defaults to all registered metrics.
         * save_to       (str | Path):   Path at which results will be saved (JSON). Defaults to 
                                         None.
-        * device        (str):          Torch computation device. Defautls to "auto".
+        * device        (str):          Torch computation device. Defaults to "auto".
         * seed          (int):          Random number generation seed. Defaults to 1.
 
     ## Returns:

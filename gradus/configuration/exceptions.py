@@ -35,8 +35,8 @@ class SubParserNotConfiguredError(ConfigurationError):
         """# Raise Sub-Parser Not Configured Error.
 
         ## Args:
-            * parsery_id    (str):  Identifier of the entity for whom the configuration class is 
-                                    defined.
+            * parser_id (str):  Identifier of the entity for whom the configuration class is 
+                                defined.
         """
         super(SubParserNotConfiguredError, self).__init__(
             f"""Sub-parser parameters not configured for {parser_id} config class"""

@@ -13,7 +13,7 @@ from torch.nn                       import AdaptiveAvgPool2d, BatchNorm2d, Conv2
                                            MaxPool2d, Module, ReLU, Sequential
 from torch.nn.init                  import constant_, kaiming_normal_
 
-from gradus.networks.resnet.blocks  import BlockType
+from gradus.networks.resnet.blocks  import BlockType, ResNetBlock, ResNetBottleneck
 from gradus.utilities               import get_logger
 
 class ResNet(Module):
@@ -68,7 +68,7 @@ class ResNet(Module):
         self._avg_pool_:        AdaptiveAvgPool2d = AdaptiveAvgPool2d(
                                                         output_size =   (1, 1)
                                                     )
-        self._relu_:            ReLU =              ReLU(inplace = True)
+        self._relu_:            ReLU =              ReLU(inplace =      True)
         self._fc_:              Linear =            Linear(
                                                         in_features =   512 * block.expansion,
                                                         out_features =  num_classes
@@ -213,4 +213,4 @@ class ResNet(Module):
         for m in self.modules(): 
 
             # If block layer
-            if isinstance(m, BlockType): m.zero_init()
+            if isinstance(m, (ResNetBlock, ResNetBottleneck)): m.zero_init()

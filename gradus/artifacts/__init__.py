@@ -1,6 +1,6 @@
 """# gradus.artifacts
 
-Data/Record keeing utilities.
+Data/record-keeing utilities.
 """
 
 __all__ =   [

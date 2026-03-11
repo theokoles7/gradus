@@ -1,4 +1,4 @@
-"""# gradus,metrics.complexity.edge_density
+"""# gradus.metrics.complexity.edge_density
 
 Edge density complexity metric module.
 """

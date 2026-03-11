@@ -44,7 +44,7 @@ setup(
     name =                          "gradus",
     version =                       get_version(),
     author =                        "Gabriel C. Trahan",
-    author_email =                  "gabriel.trahan1.louisiana.edu",
+    author_email =                  "gabriel.trahan1@louisiana.edu",
     description =                   """Experiments in quantifying image complexity and determining 
                                     the efficacy of curriculum learning in image classification 
                                     tasks.""",

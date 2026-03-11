@@ -13,7 +13,7 @@ class ScoreSampleConfig(CommandConfig):
 
     def __init__(self):
         """# Instantiate Sample Analysis Command Configuration."""
-        # Initilize configuration.
+        # Initialize configuration.
         super(ScoreSampleConfig, self).__init__(
             name =  "score-sample",
             help =  """Compute image complexity metrics for individual dataset sample."""

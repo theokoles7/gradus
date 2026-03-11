@@ -35,7 +35,7 @@ class CIFAR_10(Dataset):
         max_workers:    int =   get_system_core_count(),
         **kwargs
     ):
-        """# Intantiate CIFAR-10 Dataset.
+        """# Instantiate CIFAR-10 Dataset.
 
         ## Args:
             * root          (str):  Path to directory from/to which datasets should be 

@@ -11,7 +11,7 @@ from typing                 import override
 from gradus.configuration   import CommandConfig
 
 class BumpVersionConfig(CommandConfig):
-    """# Bump Version COmmand Configuration"""
+    """# Bump Version Command Configuration"""
 
     def __init__(self):
         """# Instantiate Bump Version Command Configuration."""

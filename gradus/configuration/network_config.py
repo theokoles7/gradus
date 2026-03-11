@@ -1,6 +1,6 @@
 """# gradus.configuration.network_config
 
-Neural network configuration & parsing hander implementation.
+Neural network configuration & argument parsing hander implementation.
 """
 
 __all__ = ["NetworkConfig"]

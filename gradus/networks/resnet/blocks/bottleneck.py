@@ -19,10 +19,10 @@ class ResNetBottleneck(Module):
     """# Residual Neural Network Bottleneck Block"""
 
     # Initialize block ID counter.
-    block_id:       count = count()
+    block_id:   count = count()
 
     # Define expansion property.
-    _expansion_:    int =   4
+    expansion:  int =   4
 
     def __init__(self,
         in_planes:  int,
@@ -91,13 +91,6 @@ class ResNetBottleneck(Module):
         
         # Debug initialization.
         self.__logger__.debug(f"Initialized {self}")
-
-    # PROPERTIES ===================================================================================
-
-    @property
-    def expansion(self) -> int:
-        """# Expansion Factor of Block"""
-        return self._expansion_
 
     # METHODS ======================================================================================
 

@@ -26,11 +26,11 @@ def bump_version_entry_point(
     ## Args:
         * bump_type (str):  Specify which segment of the version to increment.
         * tag       (bool): Commit all changes and tag as release. Defaults to False.
-        * message   (strl): Message indicating purpose of version bump.
+        * message   (str):  Message indicating purpose of version bump.
 
     ## Bump Types:
-        * `major`:  Incompatible PA changes.
-        * `minor`:  Backward-compatible functinality additions/features.
+        * `major`:  Incompatible API changes.
+        * `minor`:  Backward-compatible functionality additions/features.
         * `patch`:  Backward-compatible bug fixes/security patches.
     """
     from logging            import Logger
@@ -83,14 +83,14 @@ def bump_version_entry_point(
             case "patch":   patch += 1
 
             # Invalid
-            case _:         logger.error(f"Invalid bumpy type: {bump_type}"); return
+            case _:         logger.error(f"Invalid bump type: {bump_type}"); return
 
         # Form new version string.
         new_version:    str =   f"{major}.{minor}.{patch}"
 
         # Replace version in metadata.
         metadata:       str =   sub(
-                                    r'__version__\s*=\s*"[^"]"',
+                                    r'__version__\s*=\s*"[^"]*"',
                                     f'__version__ = "{new_version}"',
                                     metadata
                                 )
@@ -127,7 +127,7 @@ def bump_version_entry_point(
             except CalledProcessError as e:
 
                 # Report failure.
-                logger.error(f"Failed to create git tag: vv{new_version}: {e}")
+                logger.error(f"Failed to create git tag: v{new_version}: {e}")
                 logger.warning(f"Metadata file was modified but may not be commited")
 
     # Report wild card errors.

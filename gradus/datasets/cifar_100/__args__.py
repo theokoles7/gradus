@@ -6,7 +6,7 @@ Argument definitions & parsing for CIFAR-100 dataset.
 from gradus.configuration   import DatasetConfig
 
 class CIFAR100Config(DatasetConfig):
-    """# CIFAR-10 Dataset Configuration"""
+    """# CIFAR-100 Dataset Configuration"""
 
     def __init__(self):
         """# Instantiate CIFAR-100 Dataset Configuration."""

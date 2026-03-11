@@ -1,7 +1,6 @@
 """# gradus.metrics.model_informed.saturation_time
 
-Measurement of the time required for a model's weights to saturate/converge for an individual image.
-sample.
+Measurement of the time required for a model's weights to saturate for an individual image sample.
 """
 
 __all__ =   [
@@ -32,17 +31,17 @@ class TimeToSaturation():
         learning_rate:  float =                 0.05,
         device:         Union[str, t_device] =  "auto"
     ):
-        """# Calculate Sample's Time-to-Convergence Metric.
+        """# Calculate Sample's Time-to-Saturation Metric.
 
         ## Args:
-            * sample            (Tensor):       Sample whose convergence time is being measured.
+            * sample            (Tensor):       Sample whose saturation time is being measured.
             * max_iterations    (int):          Maximum number of iterations allowed before 
                                                 abandoning measurement attempt. Defaults to 1000.
             * threshold         (float):        Threshold under which the loss delta must fall to be 
-                                                considered "converged". Defaults to 1e-3.
+                                                considered "saturated". Defaults to 1e-3.
             * window            (int):          Number of consecutive iterations for which loss 
                                                 delta must remain under threshold to achieve "stable 
-                                                convergence". Defaults to 5.
+                                                saturation". Defaults to 5.
             * learning_rate     (float):        Learning rate with which optimizer will be 
                                                 configured. Defaults to 0.05.
             * device            (str | device): Torch computation device. Defaults to "auto".
@@ -282,22 +281,22 @@ def time_to_saturation(
     learning_rate:  float =                 0.05,
     device:         Union[str, t_device] =  "auto"
 ) -> int:
-    """# Calculate Sample's Time-to-Convergence Metric.
+    """# Calculate Sample's Time-to-Saturation Metric.
 
     ## Args:
-        * sample            (Tensor):       Sample whose convergence time is being measured.
+        * sample            (Tensor):       Sample whose saturation time is being measured.
         * max_iterations    (int):          Maximum number of iterations allowed before 
                                             abandoning measurement attempt. Defaults to 1000.
         * threshold         (float):        Threshold under which the loss delta must fall to be 
                                             considered "converged". Defaults to 1e-3.
         * window            (int):          Number of consecutive iterations for which loss 
                                             delta must remain under threshold to achieve "stable 
-                                            convergence". Defaults to 5.
+                                            saturation". Defaults to 5.
         * learning_rate     (float):        Learning rate with which optimizer will be 
                                             configured. Defaults to 0.05.
         * device            (str | device): Torch computation device. Defaults to "auto".
 
     ## Returns:
-        * int:  Number of iterations required for sample saturation.
+        * int:  Number of iterations required for weight saturation.
     """
     return TimeToSaturation(**locals()).iterations

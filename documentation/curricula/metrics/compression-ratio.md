@@ -28,6 +28,7 @@ The range is $[1, \infty)$ in theory, though natural images typically fall in th
 
 - Kolmogorov, A. N. (1965). Three approaches to the quantitative definition of information. *Problems of Information Transmission*, 1(1), 1–7.
 - Sheinwald, J., Lempel, A., & Ziv, J. (1992). On the compression of data with unknown statistics. *IEEE Transactions on Information Theory*, 38(3), 877–884.
+
 ## Formula Summary
 
 | Symbol    | Description       | Formula                                       |

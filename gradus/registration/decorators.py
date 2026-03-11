@@ -106,7 +106,7 @@ def register_metric(
 
     ## Args:
         * id        (str):                  Metric identifier.
-        * fn        (Callable):             Metric quick-access funtion.
+        * cls       (Type):                 Metric class.
         * config    (Type[MetricConfig]):   Metric configuration handler.
         * tags      (List[str]):            Taxonomical metric keywords.
 

@@ -21,9 +21,9 @@ def parse_gradus_arguments(
         * namespace (Namespace | None):     Mapping of arguments to their values.
 
     ## Returns:
-        * Namespace:    Mapping of arugments & their values.
+        * Namespace:    Mapping of arguments & their values.
     """
-    # Initilize parser.
+    # Initialize parser.
     parser:     ArgumentParser =    ArgumentParser(
                                         prog =          "gradus",
                                         description =   """Experiments in quantifying image 

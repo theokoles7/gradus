@@ -1,6 +1,6 @@
 """# gradus.samplers.dataset_sampler
 
-Holistic/Stochastic dataset sampler implementation.
+Holistic dataset sampler implementation.
 """
 
 __all__ = ["CurriculumDatasetSampler"]

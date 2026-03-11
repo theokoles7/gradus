@@ -39,7 +39,7 @@ class MetricEntry(Entry):
         self._cls_: Type["Metric"] =    cls
         self._fn_:  Callable =          fn
 
-    # PROPErTIES ===================================================================================
+    # PROPERTIES ===================================================================================
 
     @property
     def cls(self) -> Type["Metric"]:

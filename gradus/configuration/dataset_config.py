@@ -41,8 +41,10 @@ class DatasetConfig(Config):
         """# Define Dataset Arguments.
 
         ## Args:
-            * parser    (ArgumentParser):   Parser to whom arguments will be attriuted.
+            * parser    (ArgumentParser):   Parser to whom arguments will be attributed.
         """
+        from gradus.registration    import METRIC_REGISTRY
+
         # GENERAL ----------------------------------------------------------------------------------
         general:    _ArgumentGroup =    parser.add_argument_group(
                                             title =         "General",
@@ -74,4 +76,29 @@ class DatasetConfig(Config):
             default =   get_system_core_count(),
             help =      """Maximum number of worker threads to use for data loading. Defaults to the 
                         number of CPU cores available on the system."""
+        )
+
+        # CURRICULUM ===============================================================================
+        curriculum: _ArgumentGroup =    parser.add_argument_group(
+                                            title =         "Curriculum",
+                                            description =   """Curriculum design & configuration."""
+                                        )
+        
+        curriculum.add_argument(
+            "--metric",
+            dest =      "metric",
+            type =      str,
+            choices =   METRIC_REGISTRY.list_entries(),
+            default =   None,
+            help =      """Metric by which dataset samples will be ranked."""
+        )
+
+        curriculum.add_argument(
+            "--order",
+            dest =      "order",
+            type =      str,
+            choices =   ["ascending", "descending", "distance-from-mean"],
+            default =   "ascending",
+            help =      """Order by which dataset samples will be sorted based on ranking. Defaults 
+                        to "ascending"."""
         )

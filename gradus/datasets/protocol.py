@@ -11,7 +11,7 @@ from typing             import List, Tuple
 
 from torch.utils.data   import DataLoader, Dataset as t_Dataset
 
-from gradus.utilities   import get_logger
+from gradus.utilities   import get_logger, get_system_core_count
 
 class Dataset(ABC):
     """# Gradus Dataset Wrapper & Protocol"""
@@ -101,6 +101,52 @@ class Dataset(ABC):
     def width(self) -> int:
         """# Input Width"""
         return self._width_
+    
+    # HELPERS ======================================================================================
+
+    def _resolve_dataloader_(self,
+        data:               t_Dataset,
+        batch_size:         int =       64,
+        max_workers:        int =       get_system_core_count(),
+        metric:             str =       None,
+        order:              str =       "ascending",
+        scope:              str =       "holistic",
+        normalize_classes:  bool =      False
+    ) -> DataLoader:
+        """# Instantiate DataLoader.
+
+        ## Args:
+            * data              (Dataset):  Dataset being loaded.
+            * batch_size        (int):      Number of samples to load into batches. Defaults to 64.
+            * max_workers       (int):      Maximum number of workers allocated to data 
+                                            preprocessing. Defaults to max system core count.
+            * metric            (str):      Metric by which dataset samples will be ranked.
+            * order             (str):      Order by which dataset samples will be sorted, based on 
+                                            rank. Defaults to "ascending".
+            * scope             (str):      Scope of sorting (i.e., "holistic", "batch-wise"). 
+                                            Defaults to "holistic".
+            * normalize_classes (bool):     Distribute classes across batches as equally as 
+                                            possible.
+
+        ## Returns:
+            * DataLoader:   Instantiated dataloader.
+        """
+        from gradus.registration    import METRIC_REGISTRY
+
+        # If a metric is not specified...
+        if metric is None:
+
+            # Provide a generic dataloader, randomly shuffled.
+            return  DataLoader(
+                        dataset =       data,
+                        batch_size =    batch_size,
+                        num_workers =   max_workers,
+                        pin_memory =    True,
+                        shuffle =       True,
+                        drop_last =     False
+                    )
+        
+        # TODO: Otherwise...
     
     # DUNDERS ======================================================================================
 

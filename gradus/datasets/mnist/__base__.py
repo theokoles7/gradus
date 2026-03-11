@@ -35,7 +35,15 @@ class MNIST(Dataset):
         max_workers:    int =   get_system_core_count(),
         **kwargs
     ):
-        """# Intantiate MNIST Dataset."""
+        """# Instantiate MNIST Dataset.
+
+        ## Args:
+            * root          (str):  Path to directory from/to which datasets should be 
+                                    loaded/downloaded. Defaults to "./data/".
+            * batch_size    (int):  Number of samples to load into batches. Defaults to 64.
+            * max_workers   (int):  Maximum number of workers allocated to data preprocessing. 
+                                    Defaults to max system core count.
+        """
         # Define transform.
         self._transform_:       Compose =       Compose([
                                                     # Convert images to tensors.

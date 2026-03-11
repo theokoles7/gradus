@@ -31,7 +31,7 @@ def score_dataset_entry_point(
         * metrics       (List[str]):    Metric(s) to compute. Defaults to all registered metrics.
         * output_path   (str | Path):   Directory under which results will be written. Defaults to 
                                         "./analysis/datasets/".
-        * device        (str):          Torch computation device. Defautls to "auto".
+        * device        (str):          Torch computation device. Defaults to "auto".
         * seed          (int):          Random number generation seed. Defaults to 1.
 
     ## Returns:

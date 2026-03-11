@@ -1,4 +1,4 @@
-"""# grardus.utilities.system
+"""# gradus.utilities.system
 
 Utility functions for system/hardware information and management.
 """

@@ -75,7 +75,7 @@ class NetworkRegistry(Registry):
             * network_id    (str):  Identifier of neural network being queried.
 
         ## Raises:
-            * EntryNotFoundError:   If dataset queried is not registered.
+            * EntryNotFoundError:   If network queried is not registered.
 
         ## Returns:
             * NetworkEntry: Neural network entry, if registered.

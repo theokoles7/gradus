@@ -1,4 +1,4 @@
-"""# gradius.meta
+"""# gradus.meta
 
 Package metadata.
 """

@@ -22,7 +22,7 @@ def configure_logger(
     logging_level:  str =   "INFO",
     logging_path:   str =   "logs"
 ) -> Logger:
-    """# Configure Loging Utility.
+    """# Configure Logging Utility.
 
     ## Args:
         * logging_level (str):  Minimum logging level (DEBUG < INFO < WARNING < ERROR < CRITICAL). 

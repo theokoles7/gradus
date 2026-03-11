@@ -26,7 +26,7 @@ class SpatialFrequencyConfig(MetricConfig):
     def _define_arguments_(self,
         parser: ArgumentParser
     ) -> None:
-        """# Define Spatial Frequency Computation Artguments.
+        """# Define Spatial Frequency Computation Arguments.
         
         ## Args:
             * parser    (ArgumentParser):   Parser to whom arguments will be attributed.
