@@ -81,7 +81,7 @@ class CIFAR_10(Dataset):
                                                     batch_size =    batch_size,
                                                     num_workers =   max_workers,
                                                     pin_memory =    True,
-                                                    shuffle =       True,
+                                                    shuffle =       False,
                                                     drop_last =     True
                                                 )
         
@@ -91,7 +91,7 @@ class CIFAR_10(Dataset):
                                                     batch_size =    batch_size,
                                                     num_workers =   max_workers,
                                                     pin_memory =    True,
-                                                    shuffle =       True,
+                                                    shuffle =       False,
                                                     drop_last =     False
                                                 )
         
