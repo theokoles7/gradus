@@ -6,5 +6,5 @@ Experiments in quantifying image complexity and determining the efficacy of curr
 
 * ### [Setup & Installation](./documentation/setup.md)
 * ### [Curricula](./documentation/curricula/README.md)
-  * #### [Metrics](./documentation/curricula/metrics.md)
-  * #### [Ordering Schemes](./documentation/curricula/ordering-schemes.md)
+  * #### [Metrics](./documentation/curricula/metrics/README.md)
+  * #### [Scheduling](./documentation/curricula/scheduling/README.md)

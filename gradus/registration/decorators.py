@@ -8,6 +8,7 @@ __all__ =   [
                 "register_dataset",
                 "register_metric",
                 "register_network",
+                "register_rank",
             ]
 
 from typing                     import Callable, List, Type
@@ -178,6 +179,45 @@ def register_network(
 
         # Expose neural network class.
         return cls
+    
+    # Expose decorator.
+    return decorator
+
+
+def register_rank(
+    id:     str,
+    tags:   List[str]
+) -> Callable:
+    """# Register Curriculum Rank.
+
+    ## Args:
+        * id    (str):          Ranking identifier.
+        * tags  (List[str]):    Taxonomical ranking keywords.
+
+    ## Returns:
+        * Callable: Registration decorator.
+    """
+    # Define decorator.
+    def decorator(
+        fn: Callable
+    ) -> Callable:
+        """# Curriculum Ranking Registration Decorator.
+
+        ## Args:
+            * fn    (Callable): Rank ordering scheme function.
+        """
+        # Load registry.
+        from gradus.registration    import RANK_REGISTRY
+
+        # Register curriculum ranking.
+        RANK_REGISTRY.register(
+            entry_id =  id,
+            fn =        fn,
+            tags =      tags
+        )
+
+        # Expose ranking function.
+        return fn
     
     # Expose decorator.
     return decorator
