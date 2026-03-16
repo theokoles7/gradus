@@ -80,7 +80,7 @@ def score_dataset_entry_point(
     logger.info(f"Scoring {dataset_id.upper()} ({len(dataset.train_data)} samples; metrics: {scheduled})")
 
     # Determine CSV path.
-    csv_path:       Path =      output_dir / f"{dataset_id}-complexity-metrics.csv"
+    csv_path:       Path =      output_dir / f"metric-scores_seed-{seed}.csv"
 
     # Define CSV columns.
     columns:        List[str] = ["index", "class"] + scheduled
@@ -102,9 +102,8 @@ def score_dataset_entry_point(
             label:  Any =               dataset.train_data[i][1]
 
             # Initialize row with index & label.
-            row:    Dict[str, Any] =    {"index": i, "class": label}
+            row:    Dict[str, Any] =    {"index": i, "class": dataset.classes[label]}
 
-            # Compute each metric, isolating failures.
             # For each scheduled metric...
             for metric_id in scheduled:
 

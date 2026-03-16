@@ -1,7 +1,9 @@
-"""# gradus.commands.analyze_dataset.args
+"""# gradus.commands.score_dataset.args
 
 Argument definitions & parsing for score-dataset command.
 """
+
+__all__ = ["ScoreDatasetConfig"]
 
 from argparse               import ArgumentParser
 from typing                 import override
@@ -55,9 +57,9 @@ class ScoreDatasetConfig(CommandConfig):
             "--output-path",
             dest =      "output_path",
             type =      str,
-            default =   "analyses/datasets",
+            default =   "analysis/datasets",
             help =      """Path at which dataset analysis results will be written. Defaults to 
-                        "./analyses/datasets/"."""
+                        "./analysis/datasets/"."""
         )
 
         parser.add_argument(
