@@ -48,7 +48,7 @@ class TimeToConvergence():
         """
         # Define properties.
         self._device_:              t_device =      determine_device(device = device)
-        self._sample_:              Tensor =        sample
+        self._sample_:              Tensor =        sample.to(self._device_)
         self._max_iterations_:      int =           max_iterations
         self._threshold_:           float =         threshold
         self._window_:              int =           window
