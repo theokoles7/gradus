@@ -66,9 +66,9 @@ def score_dataset_entry_point(
     metrics_list:   List[str] = metrics if isinstance(metrics, list) else [metrics]
 
     # Resolve which metrics to run.
-    scheduled:      List[str] =         METRIC_REGISTRY.list_entries()  \
-                                        if "all" in metrics_list        \
-                                        else [m for m in metrics_list if m in METRIC_REGISTRY]
+    scheduled:      List[str] = METRIC_REGISTRY.list_entries()  \
+                                if "all" in metrics_list        \
+                                else [m for m in metrics_list if m in METRIC_REGISTRY]
 
     # For any unrecognized metrics...
     for uid in [m for m in metrics_list if m != "all" and m not in METRIC_REGISTRY]:
@@ -80,10 +80,10 @@ def score_dataset_entry_point(
     logger.info(f"Scoring {dataset_id.upper()} ({len(dataset.train_data)} samples; metrics: {scheduled})")
 
     # Determine CSV path.
-    csv_path:       Path =              output_dir / f"{dataset_id}-complexity-metrics.csv"
+    csv_path:       Path =      output_dir / f"{dataset_id}-complexity-metrics.csv"
 
     # Define CSV columns.
-    columns:        List[str] =         ["index", "label"] + scheduled
+    columns:        List[str] = ["index", "class"] + scheduled
 
     # Open CSV for incremental writing.
     with open(csv_path, "w", newline = "") as csv_file:
@@ -102,7 +102,7 @@ def score_dataset_entry_point(
             label:  Any =               dataset.train_data[i][1]
 
             # Initialize row with index & label.
-            row:    Dict[str, Any] =    {"index": i, "label": label}
+            row:    Dict[str, Any] =    {"index": i, "class": label}
 
             # Compute each metric, isolating failures.
             # For each scheduled metric...
@@ -112,7 +112,7 @@ def score_dataset_entry_point(
                 try: row[metric_id] = METRIC_REGISTRY.get_entry(metric_id).fn(sample)
 
                 # Record failed caluclations as NAN.
-                except Exception as e: row[metric_id] = float("nan")
+                except Exception as e: row[metric_id] = float("nan"); raise
 
             # Write row to file.
             writer.writerow(row)
