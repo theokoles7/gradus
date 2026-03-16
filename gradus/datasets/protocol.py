@@ -40,7 +40,7 @@ class Dataset(ABC):
         self.__logger__:    Logger =    get_logger(f"{id}-dataset")
 
         # Define properties.
-        self._id_:  str =   id
+        self._id_:          str =       id
 
         # Debug initialization.
         self.__logger__.debug(f"Initialized {self}")

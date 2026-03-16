@@ -32,6 +32,7 @@ class CIFAR_10(Dataset):
     def __init__(self,
         root:           str =   "data",
         batch_size:     int =   64,
+        shuffle:        bool =  False,
         max_workers:    int =   get_system_core_count(),
         **kwargs
     ):
@@ -41,6 +42,7 @@ class CIFAR_10(Dataset):
             * root          (str):  Path to directory from/to which datasets should be 
                                     loaded/downloaded. Defaults to "./data/".
             * batch_size    (int):  Number of samples to load into batches. Defaults to 64.
+            * shuffle       (bool): Shuffle training set.
             * max_workers   (int):  Maximum number of workers allocated to data preprocessing. 
                                     Defaults to max system core count.
         """
@@ -81,7 +83,7 @@ class CIFAR_10(Dataset):
                                                     batch_size =    batch_size,
                                                     num_workers =   max_workers,
                                                     pin_memory =    True,
-                                                    shuffle =       False,
+                                                    shuffle =       shuffle,
                                                     drop_last =     True
                                                 )
         

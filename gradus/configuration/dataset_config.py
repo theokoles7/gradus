@@ -70,6 +70,14 @@ class DatasetConfig(Config):
         )
 
         general.add_argument(
+            "--shuffle",
+            dest =      "shuffle",
+            action =    "store_true",
+            default =   False,
+            help =      """Shuffle training set."""
+        )
+
+        general.add_argument(
             "--max-workers",
             dest =      "max_workers",
             type =      int,
