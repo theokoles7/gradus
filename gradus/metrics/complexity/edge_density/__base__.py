@@ -69,8 +69,17 @@ class EdgeDensity():
         # Convert sample (Tensor) to NDArray.
         image:  NDArray =   self._sample_.detach().cpu().numpy()
 
-        # If this is a 3D image, transpose shape CHW -> HWC & convert RGB -> GRAY.
-        if image.ndim == 3:    image = cvtColor(image.transpose(1, 2, 0), COLOR_RGB2GRAY)
+        # If 2D image...
+        if image.ndim == 3:
+
+            # If single channel...
+            if image.shape[0] == 1:
+
+                # Squeeze channel dimension.
+                image = image.squeeze(0)
+
+            # Otherwise, transpose 3-channel.
+            else: image = cvtColor(image.transpose(1, 2, 0), COLOR_RGB2GRAY)
 
         # Scale to [0, 255].
         if image.max() <= 1.0: image = (image * 255)
