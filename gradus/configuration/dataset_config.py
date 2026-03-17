@@ -43,7 +43,7 @@ class DatasetConfig(Config):
         ## Args:
             * parser    (ArgumentParser):   Parser to whom arguments will be attributed.
         """
-        from gradus.registration    import METRIC_REGISTRY
+        from gradus.registration    import METRIC_REGISTRY, RANK_REGISTRY
 
         # GENERAL ----------------------------------------------------------------------------------
         general:    _ArgumentGroup =    parser.add_argument_group(
@@ -102,11 +102,20 @@ class DatasetConfig(Config):
         )
 
         curriculum.add_argument(
-            "--order",
-            dest =      "order",
+            "--rank",
+            dest =      "rank",
             type =      str,
-            choices =   ["ascending", "descending", "distance-from-mean"],
+            choices =   RANK_REGISTRY.list_entries(),
             default =   "ascending",
-            help =      """Order by which dataset samples will be sorted based on ranking. Defaults 
+            help =      """Order by which dataset samples will be sorted based on metric. Defaults 
                         to "ascending"."""
+        )
+
+        curriculum.add_argument(
+            "--scope",
+            dest =      "scope",
+            type =      str,
+            choices =   ["holistic", "batch-wise"],
+            default =   "holistic",
+            help =      """Scope of curriculum ranking. Defaults to "holistic"."""
         )

@@ -109,7 +109,7 @@ class Dataset(ABC):
         batch_size:         int =       64,
         max_workers:        int =       get_system_core_count(),
         metric:             str =       None,
-        order:              str =       "ascending",
+        rank:               str =       "ascending",
         scope:              str =       "holistic",
         normalize_classes:  bool =      False
     ) -> DataLoader:
@@ -121,7 +121,7 @@ class Dataset(ABC):
             * max_workers       (int):      Maximum number of workers allocated to data 
                                             preprocessing. Defaults to max system core count.
             * metric            (str):      Metric by which dataset samples will be ranked.
-            * order             (str):      Order by which dataset samples will be sorted, based on 
+            * rank              (str):      Order by which dataset samples will be sorted, based on 
                                             rank. Defaults to "ascending".
             * scope             (str):      Scope of sorting (i.e., "holistic", "batch-wise"). 
                                             Defaults to "holistic".

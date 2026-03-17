@@ -18,7 +18,7 @@ from gradus.registration                        import register_command
 def score_dataset_entry_point(
     dataset_id:     str,
     metrics:        List[str] =         ["all"],
-    output_path:    Union[str, Path] =  "analysis/datasets",
+    output_path:    Union[str, Path] =  ".cache/datasets",
     device:         str =               "auto",
     seed:           int =               1,
     *args,
@@ -30,7 +30,7 @@ def score_dataset_entry_point(
         * dataset_id    (str):          Identifier of dataset being analyzed.
         * metrics       (List[str]):    Metric(s) to compute. Defaults to all registered metrics.
         * output_path   (str | Path):   Directory under which results will be written. Defaults to 
-                                        "./analysis/datasets/".
+                                        "./,cache/datasets/".
         * device        (str):          Torch computation device. Defaults to "auto".
         * seed          (int):          Random number generation seed. Defaults to 1.
 
