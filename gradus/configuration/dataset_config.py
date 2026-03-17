@@ -56,9 +56,9 @@ class DatasetConfig(Config):
             "--root",
             dest =      "root",
             type =      str,
-            default =   ".data",
+            default =   ".cache/data",
             help =      """Path to directory from/to which datasets should be loaded/downloaded. 
-                        Defaults to "./.data/"."""
+                        Defaults to ".cache/data/"."""
         )
 
         general.add_argument(
