@@ -11,7 +11,7 @@ from gradus.registration.core       import Entry
 
 if TYPE_CHECKING:
     from gradus.configuration       import MetricConfig
-    from gradus.curricula.metrics   import Metric
+    from gradus.metrics   import Metric
 
 class MetricEntry(Entry):
     """# Metric Registration Entry"""
