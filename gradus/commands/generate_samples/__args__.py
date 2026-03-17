@@ -37,7 +37,7 @@ class GenerateSamplesConfig(CommandConfig):
             "--size",
             dest =      "size",
             type =      int,
-            default =   255,
+            default =   256,
             help =      """Side dimension of images being generated. Defaults to 255."""
         )
 

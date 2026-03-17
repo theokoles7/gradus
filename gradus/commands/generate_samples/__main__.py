@@ -11,7 +11,7 @@ from gradus.registration                        import register_command
     config =    GenerateSamplesConfig
 )
 def generate_samples_entry_point(
-    size:           int =   255,
+    size:           int =   256,
     output_path:    str =   ".test",
     *args,
     **kwargs
@@ -25,7 +25,7 @@ def generate_samples_entry_point(
     from logging                                    import Logger
     from pathlib                                    import Path
 
-    from numpy                                      import full, uint8, zeros
+    from numpy                                      import full, uint8
     from PIL                                        import Image
 
     from gradus.commands.generate_samples.utilities import constrast_pairs, make_checkerboard
@@ -38,8 +38,16 @@ def generate_samples_entry_point(
     output_path:    Path =      Path(output_path); output_path.mkdir(parents = True, exist_ok = True)
 
     # Create solid black & white images.
-    Image.fromarray(zeros((size, size, 3),      dtype = uint8)).save(output_path / "black.png")
-    Image.fromarray(full( (size, size, 3), 255, dtype = uint8)).save(output_path / "white.png")
+    Image.fromarray(full( (size, size, 3), [  0,   0,   0], dtype = uint8)).save(output_path / "solid_black.png")
+    Image.fromarray(full( (size, size, 3), [255, 255, 255], dtype = uint8)).save(output_path / "solid_white.png")
+    Image.fromarray(full( (size, size, 3), [255,   0,   0], dtype = uint8)).save(output_path / "solid_red.png")
+    Image.fromarray(full( (size, size, 3), [  0, 255,   0], dtype = uint8)).save(output_path / "solid_green.png")
+    Image.fromarray(full( (size, size, 3), [  0,   0, 255], dtype = uint8)).save(output_path / "solid_blue.png")
+    Image.fromarray(full( (size, size, 3), [  0, 255, 255], dtype = uint8)).save(output_path / "solid_cyan.png")
+    Image.fromarray(full( (size, size, 3), [255,   0, 255], dtype = uint8)).save(output_path / "solid_magenta.png")
+    Image.fromarray(full( (size, size, 3), [255, 255,   0], dtype = uint8)).save(output_path / "solid_yellow.png")
+
+    logger.info(f"Generated solid color images")
 
     # For each color constrast pair...
     for pair, (color_a, color_b) in constrast_pairs.items():
@@ -53,7 +61,7 @@ def generate_samples_entry_point(
                 tiles =     tile_size,
                 color_a =   color_a,
                 color_b =   color_b
-            ).save(output_path / f"{pair}_checker_{tile_size}x{tile_size}.png")
+            ).save(output_path / f"checker_{pair}_{tile_size}x{tile_size}.png")
 
             # Log image generation.
-            logger.info(f"""Generated {output_path / f"{pair}_checker_{tile_size}x{tile_size}.png"}""")
+            logger.info(f"""Generated {output_path / f"checker_{pair}_{tile_size}x{tile_size}.png"}""")
