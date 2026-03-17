@@ -9,26 +9,30 @@ __all__ =   [
             ]
 
 from functools                                          import cached_property
-from typing                                             import List
+from typing                                             import List, Union
 
-from torch                                              import Tensor
+from torch                                              import device as t_device, Tensor
 
 from gradus.metrics.complexity.color_variance.__args__  import ColorVarianceConfig
 from gradus.registration                                import register_metric
+from gradus.utilities                                   import determine_device
 
 class ColorVariance():
     """# Color Variance Measurement"""
 
     def __init__(self,
-        sample: Tensor
+        sample: Tensor,
+        device: Union[str, t_device] =  "auto"
     ):
         """# Calculate Sample's Color Variance.
 
         ## Args:
-            * sample    (Tensor):   Sample whose color variance is being measured.
+            * sample    (Tensor):       Sample whose color variance is being measured.
+            * device    (str | device): Torch computation device. Defaults to "auto".
         """
         # Define properties.
-        self._sample_:  Tensor =    sample
+        self._device_:  t_device =  determine_device(device)
+        self._sample_:  Tensor =    sample.to(self._device_)
 
     # PROPERTIES ===================================================================================
 
@@ -56,12 +60,14 @@ class ColorVariance():
     tags =      ["complexity"]
 )
 def color_variance(
-    sample: Tensor
+    sample: Tensor,
+    device: Union[str, t_device] =  "auto"
 ) -> float:
     """# Calculate Sample's Color Variance.
 
     ## Args:
-        * sample    (Tensor):   Sample whose color variance is being measured.
+        * sample    (Tensor):       Sample whose color variance is being measured.
+        * device    (str | device): Torch computation device. Defaults to "auto".
 
     ## Returns:
         * float:    Mean color variance of sample.

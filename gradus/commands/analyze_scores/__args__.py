@@ -32,21 +32,9 @@ class AnalyzeScoresConfig(CommandConfig):
         ## Args:
             * parser    (ArgumentParser):   Parser to whom arguments will be attributed.
         """
-        from os import listdir
-
         parser.add_argument(
-            "dataset-id",
-            dest =      "dataset_id",
+            "dataset-scores-path",
             type =      str,
             help =      """Identifier of dataset whose metric distributions are being 
                         calculated."""
-        )
-
-        parser.add_argument(
-            "--output-path",
-            dest =      "output_path",
-            type =      str,
-            default =   "analysis/datasets",
-            help =      """Path at which dataset analysis results will be written. Defaults to 
-                        "./analysis/datasets/"."""
         )

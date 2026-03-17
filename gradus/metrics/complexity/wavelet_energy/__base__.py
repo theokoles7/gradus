@@ -87,7 +87,7 @@ from gradus.registration                                import register_metric
     id =        "wavelet-energy",
     cls =       WaveletEnergy,
     config =    WaveletEnergyConfig,
-    tags =      ["complexity"]
+    tags =      ["complexity", "wavelet-decomposition"]
 )
 def wavelet_energy(
     # Sample

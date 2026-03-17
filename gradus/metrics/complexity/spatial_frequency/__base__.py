@@ -8,23 +8,29 @@ __all__ =   [
                 "spatial_frequency",
             ]
 
-from functools  import cached_property
+from functools          import cached_property
+from typing             import Union
 
-from torch      import Tensor
+from torch              import device as t_device, Tensor
+
+from gradus.utilities   import determine_device
 
 class SpatialFrequency():
     """# Spatial Frequency Measurement"""
 
     def __init__(self,
-        sample: Tensor
+        sample: Tensor,
+        device: Union[str, t_device] =  "auto"
     ):
         """# Calculate Sample's Spatial Frequency.
 
         ## Args:
-            * sample    (Tensor):   Sample whose spatial frequency is being measured.
+            * sample    (Tensor):       Sample whose spatial frequency is being measured.
+            * device    (str | device): Torch computation device. Defaults to "auto".
         """
         # Define properties.
-        self._sample_:  Tensor =    sample
+        self._device_:  t_device =  determine_device(device)
+        self._sample_:  Tensor =    sample.to(self._device_)
 
     # PROPERTIES ===================================================================================
 
