@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.compression_ratio
+"""# gradus.curricula.metrics.complexity.compression_ratio
 
 Compression ratio complexity metric module.
 """
@@ -8,4 +8,4 @@ __all__ =   [
                 "compression_ratio",
             ]
 
-from gradus.metrics.complexity.compression_ratio.__base__   import *
+from gradus.curricula.metrics.complexity.compression_ratio.__base__ import *

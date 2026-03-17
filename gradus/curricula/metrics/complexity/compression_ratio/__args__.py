@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.compression_ratio.args
+"""# gradus.curricula.metrics.complexity.compression_ratio.args
 
 Argument definitions & parsing for compression-ratio metric.
 """

@@ -1,4 +1,4 @@
-"""# gradus.metrics.protocol
+"""# gradus.curricula.metrics.protocol
 
 Abstract metric protocol.
 """

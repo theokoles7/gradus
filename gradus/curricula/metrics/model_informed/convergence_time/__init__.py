@@ -1,4 +1,4 @@
-"""# gradus.metrics.model_informed.convergence_time
+"""# gradus.curricula.metrics.model_informed.convergence_time
 
 Time-to-Convergence model-informed metric module.
 """
@@ -8,4 +8,4 @@ __all__ =   [
                 "time_to_convergence",
             ]
 
-from gradus.metrics.model_informed.convergence_time.__base__    import *
+from gradus.curricula.metrics.model_informed.convergence_time.__base__  import *

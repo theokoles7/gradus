@@ -1,4 +1,4 @@
-"""# gradus.curicula
+"""# gradus.curricula
 
 Curriculum components & utilities.
 """

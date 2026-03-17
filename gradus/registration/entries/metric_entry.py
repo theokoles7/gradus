@@ -5,13 +5,13 @@ Defines structure & utility of metric registration entry.
 
 __all__ = ["MetricEntry"]
 
-from typing                     import Callable, List, Type, TYPE_CHECKING
+from typing                         import Callable, List, Type, TYPE_CHECKING
 
-from gradus.registration.core   import Entry
+from gradus.registration.core       import Entry
 
 if TYPE_CHECKING:
-    from gradus.configuration   import MetricConfig
-    from gradus.metrics         import Metric
+    from gradus.configuration       import MetricConfig
+    from gradus.curricula.metrics   import Metric
 
 class MetricEntry(Entry):
     """# Metric Registration Entry"""

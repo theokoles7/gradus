@@ -1,4 +1,4 @@
-"""# gradus.metrics.model_informed.saturation_time.args
+"""# gradus.curricula.metrics.model_informed.saturation_time.args
 
 Argument definitions & parsing for saturation-time metric.
 """

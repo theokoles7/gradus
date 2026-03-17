@@ -1,4 +1,4 @@
-"""# gradus.metrics.model_informed.convergence_time.args
+"""# gradus.curricula.metrics.model_informed.convergence_time.args
 
 Argument definitions & parsing for convergence-time metric.
 """

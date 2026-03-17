@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.spatial_frequency.args
+"""# gradus.curricula.metrics.complexity.spatial_frequency.args
 
 Argument definitions & parsing for spatial-frequency metric.
 """

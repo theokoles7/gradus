@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.wavelet_entropy.args
+"""# gradus.curricula.metrics.complexity.wavelet_entropy.args
 
 Argument definitions & parsing for wavelet-entropy metric.
 """
