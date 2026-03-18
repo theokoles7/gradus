@@ -22,7 +22,8 @@ class VGG19(VGG):
     def __init__(self,
         input_shape:    Tuple[int, ...],
         num_classes:    int,
-        batch_norm:     bool =              True
+        batch_norm:     bool =              True,
+        **kwargs
     ):
         """# Instantiate VGG-19 Neural Network.
 
