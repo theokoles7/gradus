@@ -18,8 +18,13 @@ __all__ =   [
                 # Blocks
                 "ResNetBlock",
                 "ResNetBottleneck",
+
+                # VGG
+                "VGG16",
+                "VGG19",
             ]
 
 from gradus.networks.autoencoder    import Autoencoder
 from gradus.networks.cnn            import CNN
 from gradus.networks.resnet         import *
+from gradus.networks.vgg            import *
