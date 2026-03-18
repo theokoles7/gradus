@@ -5,28 +5,21 @@ VGG (Visual Geometry Group) network protocol.
 
 __all__ = ["VGG"]
 
-from logging                    import Logger
-from typing                     import List, Tuple, Union
+from logging            import Logger
+from typing             import List, Tuple, Union
 
-from torch                      import flatten, Tensor
-from torch.nn                   import AdaptiveAvgPool2d, BatchNorm2d, Conv2d, Dropout, Linear, \
-                                       MaxPool2d, Module, ReLU, Sequential
-from torch.nn.init              import constant_, kaiming_normal_, normal_
+from torch              import flatten, Tensor
+from torch.nn           import AdaptiveAvgPool2d, BatchNorm2d, Conv2d, Dropout, Linear, MaxPool2d, \
+                               Module, ReLU, Sequential
+from torch.nn.init      import constant_, kaiming_normal_, normal_
 
-from gradus.utilities           import get_logger
-
-# VGG architecture configurations (from Table 1 of the VGG paper).
-# Numbers represent Conv2d output channels; 'M' represents MaxPool2d.
-VGG_CONFIGS: dict = {
-    "D": [64, 64, "M", 128, 128, "M", 256, 256, 256, "M", 512, 512, 512, "M", 512, 512, 512, "M"],
-    "E": [64, 64, "M", 128, 128, "M", 256, 256, 256, 256, "M", 512, 512, 512, 512, "M", 512, 512, 512, 512, "M"],
-}
+from gradus.utilities   import get_logger
 
 class VGG(Module):
     """# VGG Neural Network"""
 
     def __init__(self,
-        config:         str,
+        layer_config:   List[Union[int, str]],
         input_shape:    Tuple[int, ...],
         num_classes:    int,
         batch_norm:     bool =              True
@@ -34,10 +27,10 @@ class VGG(Module):
         """# Instantiate VGG Neural Network.
 
         ## Args:
-            * config        (str):          VGG configuration key ("D" for VGG-16, "E" for VGG-19).
-            * input_shape   (Tuple[int]):   Shape of input samples.
-            * num_classes   (int):          Number of classes (output logits).
-            * batch_norm    (bool):         Use batch normalization. Defaults to True.
+            * config        (List[int | str]):  VGG layer configuration.
+            * input_shape   (Tuple[int]):       Shape of input samples.
+            * num_classes   (int):              Number of classes (output logits).
+            * batch_norm    (bool):             Use batch normalization. Defaults to True.
         """
         # Initialize module.
         super(VGG, self).__init__()
@@ -47,15 +40,13 @@ class VGG(Module):
 
         # Build feature extraction layers.
         self._features_:    Sequential =        self._make_layers_(
-                                                    config =        VGG_CONFIGS[config],
+                                                    config =        layer_config,
                                                     in_channels =   input_shape[0],
                                                     batch_norm =    batch_norm
                                                 )
 
         # Adaptive pooling to fixed spatial size.
-        self._avg_pool_:    AdaptiveAvgPool2d = AdaptiveAvgPool2d(
-                                                    output_size =   (7, 7)
-                                                )
+        self._avg_pool_:    AdaptiveAvgPool2d = AdaptiveAvgPool2d(output_size = (7, 7))
 
         # Classification layers.
         self._classifier_:  Sequential =        Sequential(
@@ -147,12 +138,12 @@ class VGG(Module):
         """# Build VGG Feature Extraction Layers.
 
         ## Args:
-            * config        (List):     Layer configuration list.
-            * in_channels   (int):      Number of input channels.
-            * batch_norm    (bool):     Use batch normalization. Defaults to True.
+            * config        (List): Layer configuration list.
+            * in_channels   (int):  Number of input channels.
+            * batch_norm    (bool): Use batch normalization. Defaults to True.
 
         ## Returns:
-            Sequential: Feature extraction layers.
+            * Sequential:   Feature extraction layers.
         """
         # Initialize list of layers.
         layers: List[Module] = []
@@ -164,12 +155,7 @@ class VGG(Module):
             if v == "M":
 
                 # Add max pooling layer.
-                layers.append(
-                    MaxPool2d(
-                        kernel_size =   2,
-                        stride =        2
-                    )
-                )
+                layers.append(MaxPool2d(kernel_size = 2, stride = 2))
 
             # Otherwise (convolutional layer)...
             else:
