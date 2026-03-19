@@ -57,9 +57,9 @@ class ScoreDatasetConfig(CommandConfig):
             "--output-path",
             dest =      "output_path",
             type =      str,
-            default =   ".cache/datasets",
+            default =   ".cache/scores",
             help =      """Path at which dataset analysis results will be written. Defaults to 
-                        "./.cache/datasets/"."""
+                        "./.cache/scores/"."""
         )
 
         parser.add_argument(
