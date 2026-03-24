@@ -6,11 +6,9 @@ Holistic dataset sampler implementation.
 __all__ = ["CurriculumDatasetSampler"]
 
 from logging            import Logger
-from typing             import Callable, Iterator
+from typing             import Iterator, List
 
-from numpy              import argsort
-from numpy.typing       import NDArray
-from torch.utils.data   import Dataset, Sampler
+from torch.utils.data   import Sampler
 
 from gradus.utilities   import get_logger
 
@@ -18,23 +16,18 @@ class CurriculumDatasetSampler(Sampler[int]):
     """# Holistic Dataset Sampler"""
 
     def __init__(self,
-        dataset:    Dataset,
-        metric_fn:  Callable
+        indices:    List[int]
     ):
-        """# Instantiate Holistic Batch Sampler.
+        """# Instantiate Holistic Dataset Sampler.
 
         ## Args:
-            * dataset   (Dataset):  Dataset from which to sample.
-            * metric_fn (Callable): Metric function by which sample sorting will be governed.
+            * indices   (List[int]):    Pre-sorted dataset indices defining curriculum order.
         """
         # Initialize logger.
-        self.__logger__:    Logger =    get_logger("dataset-sampler")
+        self.__logger__:    Logger =        get_logger("dataset-sampler")
 
-        # Sort dataset and record sorted indices.
-        self._indices_:     NDArray =   argsort([
-                                            metric_fn(dataset[image][0])
-                                            for image in range(len(dataset))
-                                        ])
+        # Store pre-sorted indices.
+        self._indices_:     List[int] =     indices
 
     # DUNDERS ======================================================================================
 

@@ -6,7 +6,7 @@ Batch-wise dataset sampler implementation.
 __all__ = ["CurriculumBatchSampler"]
 
 from logging            import Logger
-from typing             import Callable, Generator, List
+from typing             import Callable, Generator, List, Optional
 
 from torch.utils.data   import BatchSampler, Dataset
 
@@ -18,20 +18,31 @@ class CurriculumBatchSampler(BatchSampler[List[int]]):
     def __init__(self,
         dataset:    Dataset,
         metric_fn:  Callable,
-        batch_size: int
+        batch_size: int,
+        rank_fn:    Optional[Callable] =    None
     ):
         """# Instantiate Curriculum Batch Sampler.
 
         ## Args:
-            * dataset       (Dataset):  Dataset from which to sample.
-            * metric_fn     (Callable): Metric function by which sample sorting will be governed.
-            * batch_size    (int):      Number of samples to include in each batch.
+            * dataset       (Dataset):              Dataset from which to sample.
+            * metric_fn     (Callable):             Metric function by which sample sorting will be governed.
+            * batch_size    (int):                  Number of samples to include in each batch.
+            * rank_fn       (Callable, optional):   Rank function that takes a list of indices and returns
+                                                    them sorted by metric according to the desired rank
+                                                    scheme. When None, defaults to ascending sort.
         """
         # Initialize logger.
         self.__logger__:    Logger =            get_logger("batch-sampler")
 
         # Define batches.
         self._batches_:     List[List[int]] =   [
+                                                    rank_fn(
+                                                        list(range(
+                                                            image_index,
+                                                            min(image_index + batch_size, len(dataset))
+                                                        ))
+                                                    )
+                                                    if rank_fn is not None else
                                                     sorted(
                                                         iterable =  range(
                                                                         image_index,

@@ -131,7 +131,9 @@ class Dataset(ABC):
         ## Returns:
             * DataLoader:   Instantiated dataloader.
         """
-        from gradus.registration    import METRIC_REGISTRY
+        from pandas                     import DataFrame
+        from gradus.registration        import METRIC_REGISTRY, RANK_REGISTRY
+        from gradus.samplers            import CurriculumBatchSampler, CurriculumDatasetSampler
 
         # If a metric is not specified...
         if metric is None:
@@ -145,8 +147,51 @@ class Dataset(ABC):
                         shuffle =       True,
                         drop_last =     False
                     )
-        
-        # TODO: Otherwise...
+
+        # Retrieve the metric function from the registry.
+        metric_fn = METRIC_REGISTRY[metric].fn
+
+        # If holistic scope is requested, sort the entire dataset by metric+rank...
+        if scope == "holistic":
+
+            # Compute metric scores for all samples.
+            scores = [metric_fn(data[i][0]) for i in range(len(data))]
+
+            # Build scores DataFrame with index column required by rank functions.
+            scores_df = DataFrame({"index": list(range(len(data))), metric: scores})
+
+            # Use the rank registry to obtain sorted indices.
+            sorted_indices = RANK_REGISTRY.sort_indices(rank, metric, scores_df)
+
+            # Return dataloader with holistic curriculum sampler.
+            return  DataLoader(
+                        dataset =       data,
+                        batch_size =    batch_size,
+                        num_workers =   max_workers,
+                        pin_memory =    True,
+                        sampler =       CurriculumDatasetSampler(indices = sorted_indices),
+                        drop_last =     False
+                    )
+
+        # Otherwise, scope is batch-wise: sort samples within each batch by metric+rank.
+        # Build a rank function closure that sorts a list of indices by metric score.
+        def rank_fn(indices):
+            batch_scores = [metric_fn(data[i][0]) for i in indices]
+            df = DataFrame({"index": indices, metric: batch_scores})
+            return RANK_REGISTRY.sort_indices(rank, metric, df)
+
+        # Return dataloader driven by the curriculum batch sampler.
+        return  DataLoader(
+                    dataset =           data,
+                    num_workers =       max_workers,
+                    pin_memory =        True,
+                    batch_sampler =     CurriculumBatchSampler(
+                                            dataset =       data,
+                                            metric_fn =     metric_fn,
+                                            batch_size =    batch_size,
+                                            rank_fn =       rank_fn
+                                        )
+                )
     
     # DUNDERS ======================================================================================
 
