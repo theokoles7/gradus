@@ -22,6 +22,8 @@ logs/
 analysis/
 output/
 results/
+*.png
+*.csv
 
 # Scratch files
 *scratch*
