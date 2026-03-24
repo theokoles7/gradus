@@ -6,7 +6,7 @@ Main process entry point for score-dataset command.
 __all__ = ["score_dataset_entry_point"]
 
 from pathlib                                    import Path
-from typing                                     import Any, Dict, List, Union
+from typing                                     import Any, Dict, List, Set, Union
 
 from gradus.commands.score_dataset.__args__     import ScoreDatasetConfig
 from gradus.registration                        import register_command
@@ -37,12 +37,12 @@ def score_dataset_entry_point(
     ## Returns:
         * Path: Path at which CSV results file was saved.
     """
-    from csv                    import DictWriter
     from logging                import Logger
 
     from torch                  import Tensor
     from tqdm                   import tqdm
 
+    from gradus.artifacts       import DatasetMetrics
     from gradus.datasets        import Dataset
     from gradus.registration    import DATASET_REGISTRY, METRIC_REGISTRY
     from gradus.utilities       import determine_device, get_logger, set_seed
@@ -51,24 +51,26 @@ def score_dataset_entry_point(
     determine_device(device); set_seed(seed)
 
     # Initialize logger.
-    logger:         Logger =    get_logger("dataset-scoring")
-
-    # Form output path.
-    output_dir:     Path =      Path(output_path) / dataset_id
+    logger:         Logger =            get_logger("dataset-scoring")
 
     # Load dataset.
-    dataset:        Dataset =   DATASET_REGISTRY.load_dataset(dataset_id, **kwargs)
+    dataset:        Dataset =           DATASET_REGISTRY.load_dataset(dataset_id, **kwargs)
 
-    # Ensure path exists.
-    output_dir.mkdir(parents = True, exist_ok = True)
+    # Load dataset metrics.
+    scores:         DatasetMetrics =    DatasetMetrics(
+                                            dataset_id =    dataset_id,
+                                            num_samples =   len(dataset.train_data),
+                                            seed =          seed,
+                                            scores_path =   output_path
+                                        )
 
     # Normalize metrics argument.
-    metrics_list:   List[str] = metrics if isinstance(metrics, list) else [metrics]
+    metrics_list:   List[str] =         metrics if isinstance(metrics, list) else [metrics]
 
     # Resolve which metrics to run.
-    scheduled:      List[str] = METRIC_REGISTRY.list_entries()  \
-                                if "all" in metrics_list        \
-                                else [m for m in metrics_list if m in METRIC_REGISTRY]
+    scheduled:      List[str] =         METRIC_REGISTRY.list_entries()  \
+                                        if "all" in metrics_list        \
+                                        else [m for m in metrics_list if m in METRIC_REGISTRY]
 
     # For any unrecognized metrics...
     for uid in [m for m in metrics_list if m != "all" and m not in METRIC_REGISTRY]:
@@ -76,48 +78,67 @@ def score_dataset_entry_point(
         # Warn that it will not be computed.
         logger.warning(f"Metric not registered, skipping: {uid}")
 
+    # Determine set of unscored sample indices per metric.
+    unscored:       Dict[str, Set] =    {
+                                            metric_id:  scores.get_unscored(metric_id)
+                                            for metric_id in scheduled
+                                        }
+    
+    # If all scores have already been computed...
+    if not any(unscored.values()):
+        
+        # Log condition & exit.
+        logger.info(f"{dataset_id}, seed {seed} already scored"); return scores.scores_path
+
     # Log process initiation.
     logger.info(f"Scoring {dataset_id.upper()} ({len(dataset.train_data)} samples; metrics: {scheduled})")
 
-    # Determine CSV path.
-    csv_path:       Path =      output_dir / f"metric-scores_seed-{seed}.csv"
+    # For each sample...
+    for i in tqdm(
+        range(len(dataset.train_data)),
+        desc =  f"Scoring {dataset_id.upper()}",
+        unit =  "sample(s)"
+    ):            
+    #     # Unpack sample & label.
+    #     sample: Tensor =            dataset.train_data[i][0]
+    #     label:  Any =               dataset.train_data[i][1]
 
-    # Define CSV columns.
-    columns:        List[str] = ["index", "class"] + scheduled
+    #     # Initialize row with index & label.
+    #     row:    Dict[str, Any] =    {"index": i, "class": dataset.classes[label]}
 
-    # Open CSV for incremental writing.
-    with open(csv_path, "w", newline = "") as csv_file:
+    #     # For each scheduled metric...
+    #     for metric_id in scheduled:
 
-        # Initialize dictionary writer.
-        writer = DictWriter(csv_file, fieldnames = columns); writer.writeheader()
+    #         # If metric has already been computed for sample...
+    #         if scores.get(index = i, metric = )
 
-        # For each sample...
-        for i in tqdm(
-            range(len(dataset.train_data)),
-            desc =  f"Scoring {dataset_id.upper()}",
-            unit =  "sample(s)"
-        ):
-            # Unpack sample & label.
-            sample: Tensor =            dataset.train_data[i][0]
-            label:  Any =               dataset.train_data[i][1]
+    #         # Calculate metric for sample.
+    #         try: row[metric_id] = METRIC_REGISTRY.get_entry(metric_id).fn(sample)
 
-            # Initialize row with index & label.
-            row:    Dict[str, Any] =    {"index": i, "class": dataset.classes[label]}
+    #         # Record failed caluclations as NAN.
+    #         except Exception as e: row[metric_id] = float("nan"); raise
 
-            # For each scheduled metric...
-            for metric_id in scheduled:
-
-                # Calculate metric for sample.
-                try: row[metric_id] = METRIC_REGISTRY.get_entry(metric_id).fn(sample)
-
-                # Record failed caluclations as NAN.
-                except Exception as e: row[metric_id] = float("nan"); raise
-
-            # Write row to file.
-            writer.writerow(row)
-
-    # Communicate save location.
-    logger.info(f"Results saved to: {csv_path.absolute()}")
-
+        # Determine which metrics still need computing for this sample.
+        to_compute: List[str] = [m for m in scheduled if i in unscored[m]]
+ 
+        # If nothing to compute for this sample, move on.
+        if not to_compute: continue
+ 
+        # Unpack sample & label.
+        sample: Tensor =            dataset.train_data[i][0]
+        label:  Any =               dataset.train_data[i][1]
+ 
+        # Compute each outstanding metric for this sample.
+        row:    Dict[str, Any] =    {}
+ 
+        for metric_id in to_compute:
+            try:    row[metric_id] = METRIC_REGISTRY.get_entry(metric_id).fn(sample)
+            except Exception as e:
+                row[metric_id] = float("nan")
+                logger.warning(f"Metric '{metric_id}' failed for sample {i}: {e}")
+ 
+        # Record row.
+        scores.record_row(index = i, label = dataset.classes[label], scores = row)
+ 
     # Provide results to outer process.
-    return csv_path
+    return scores.save()
