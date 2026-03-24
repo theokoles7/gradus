@@ -12,7 +12,7 @@ from gradus.registration                        import register_command
 )
 def generate_samples_entry_point(
     size:           int =   256,
-    output_path:    str =   ".test",
+    output_path:    str =   ".cache/samples",
     *args,
     **kwargs
 ) -> None:
@@ -20,7 +20,7 @@ def generate_samples_entry_point(
 
     ## Args:
         * size          (int):  Side dimension of images being generated. Defaults to 255.
-        * output_path   (str):  Path at which test images will be written. Defaults to "./.test/".
+        * output_path   (str):  Path at which test images will be written. Defaults to "./.cache/samples/".
     """
     from logging                                    import Logger
     from pathlib                                    import Path
