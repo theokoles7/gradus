@@ -9,7 +9,7 @@ from logging    import Logger
 from pathlib    import Path
 from typing     import Dict, List, Optional, Union
 
-from pandas     import concat, DataFrame, read_csv, Series
+from pandas     import DataFrame, read_parquet, Series
 
 class DatasetMetrics():
     """# Dataset Metrics
@@ -75,7 +75,7 @@ class DatasetMetrics():
     @property
     def scores_path(self) -> Path:
         """# Absolute Path to Score Files"""
-        return self._root_ / f"metric-scores_seed-{self._seed_}.csv"
+        return self._root_ / f"metric-scores_seed-{self._seed_}.parquet"
     
     @property
     def seed(self) -> int:
@@ -169,7 +169,7 @@ class DatasetMetrics():
             * Path: Path at which metrics were saved.
         """
         # Save metrics to file.
-        self._scores_.to_csv(self.scores_path, index = False)
+        self._scores_.to_parquet(self.scores_path, index = False)
 
         # Indicate path at which metrics were saved.
         return self.scores_path.absolute()
@@ -179,7 +179,7 @@ class DatasetMetrics():
     def _load_(self) -> None:
         """# Load Metrics."""
         # If path already exists, load scores from file.
-        if self.scores_path.exists(): self._scores_ = read_csv(self.scores_path); return
+        if self.scores_path.exists(): self._scores_ = read_parquet(self.scores_path); return
 
         # Otherwise, ensure that the leading directories at least exist.
         self._root_.mkdir(parents = True, exist_ok = True)

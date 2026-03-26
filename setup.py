@@ -61,6 +61,7 @@ setup(
                                         "opencv-python",
                                         "pandas",
                                         "Pillow",
+                                        "pyarrow",
                                         "PyWavelets",
                                         "scikit-learn",
                                         "seaborn",
