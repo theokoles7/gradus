@@ -88,19 +88,19 @@ class ImageNet(Dataset):
 
         # Initialize train loader.
         self._train_loader_:    DataLoader =    DataLoader(
-                                                    data =          self._train_data_,
+                                                    dataset =       self._train_data_,
                                                     batch_size =    batch_size,
                                                     shuffle =       shuffle,
-                                                    max_workers =   max_workers,
+                                                    num_workers =   max_workers,
                                                     drop_last =     True
                                                 )
 
         # Initialize test loader.
         self._test_loader_:     DataLoader =    DataLoader(
-                                                    data =          self._test_data_,
+                                                    dataset =       self._test_data_,
                                                     batch_size =    batch_size,
                                                     shuffle =       False,
-                                                    max_workers =   max_workers,
+                                                    num_workers =   max_workers,
                                                     drop_last =     False
                                                 )
 
