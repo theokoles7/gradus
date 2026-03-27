@@ -6,6 +6,7 @@ __pycache__
 # Workspace files
 .vscode
 .idea
+gradus-env/
 
 # Model checkpoints
 checkpoints/
