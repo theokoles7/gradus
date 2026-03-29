@@ -82,7 +82,12 @@ def train_entry_point(
                                         ).to(device)
 
     # Initialize optimizer.
-    optimizer:      SGD =               SGD(params = network.parameters(), lr = 0.01)
+    optimizer:      SGD =               SGD(
+                                            params =        network.parameters(),
+                                            lr =            0.01,
+                                            weight_decay =  5e-4,
+                                            momentum =      0.9
+                                        )
     
     # Initialize training data map.
     train_record:   TrainingRecord =    TrainingRecord(
@@ -169,7 +174,7 @@ def train_entry_point(
 
         # Log epoch results.
         logger.info(
-            f"Epoch {epoch}/{epochs}: "
+            f"Epoch {epoch:3}/{epochs}: "
             f"Train Accuracy = {train_accuracy:.4f}; "
             f"Train Loss = {train_loss:.4f}; "
             f"Validation Accuracy = {val_accuracy:.4f}; "

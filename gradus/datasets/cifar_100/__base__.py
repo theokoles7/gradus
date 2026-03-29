@@ -56,8 +56,8 @@ class CIFAR_100(Dataset):
 
                                                     # Normalize pixel values.
                                                     Normalize(
-                                                        mean =  (0.5, 0.5, 0.5,),
-                                                        std =   (0.5, 0.5, 0.5,)
+                                                        mean =  (0.5071, 0.4865, 0.4409),
+                                                        std =   (0.2673, 0.2564, 0.2761)
                                                     )
                                                 ])
         

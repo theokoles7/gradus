@@ -128,6 +128,7 @@ class TrainingRecord():
             * order         (str):      Curriculum ordering ID, if any.
         """
         from csv    import DictWriter
+        from json   import dump
         
         # Define CSV fields.
         FIELDS:         List[str] = [
@@ -167,7 +168,17 @@ class TrainingRecord():
                 "loss":         loss,
             })
 
+        # Communicate master record.
         self.__logger__.info(f"Result saved to master record at {results_path.absolute}")
+
+        # Open verbose record for writing...
+        with open(self._output_path_ / f"training_record_seed-{seed}_{epochs}-epochs.json", "w") as file_out:
+
+            # Save verbose training record.
+            dump(self.to_dict(), file_out, indent = 2, default = str)
+
+        # Communicate verbose record path.
+        self.__logger__.info(f"""Verbose record saved to {self._output_path_ / f"training_record_seed-{seed}_{epochs}-epochs.json"}""")
 
     def to_dict(self) -> Dict[str, Any]:
         """# Dictionary Representation of Training Record.

@@ -48,13 +48,19 @@ class ResNet(Module):
         self._width_per_group_: int =               64
         self._dilation_:        int =               1
 
+        # If input size is 64 or less, we'll use smaller convolution on first layer.
+        small_stem:             bool =              input_shape[1] <= 64
+
+        # If using small stem, state such.
+        if small_stem: self.__logger__.info(f"Using small stem configuration")
+
         # Define layers.
         self._conv1_:           Conv2d =            Conv2d(
                                                         in_channels =   input_shape[0],
                                                         out_channels =  self._in_planes_,
-                                                        kernel_size =   7,
-                                                        stride =        2,
-                                                        padding =       3,
+                                                        kernel_size =   3 if small_stem else 7,
+                                                        stride =        1 if small_stem else 2,
+                                                        padding =       1 if small_stem else 3,
                                                         bias =          False
                                                     )
         self._bn1_:             BatchNorm2d =       BatchNorm2d(
