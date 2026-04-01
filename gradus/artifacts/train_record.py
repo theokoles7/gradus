@@ -133,11 +133,13 @@ class TrainingRecord():
         # Define CSV fields.
         FIELDS:         List[str] = [
                                         "network_id", "dataset_id", "device", "seed", "epochs",
-                                        "accuracy", "loss", "metric", "sampler", "order"
+                                        "accuracy", "loss", "metric", "sampler", "order",
+                                        "record_file"
                                     ]
         
         # Resolve results CSV path.
         results_path:   Path =      Path("results/master_record.csv")
+        record_path:    Path =      self._output_path_ / f"training-record_seed-{seed}_{epochs}-epochs.json"
 
         # Ensure path exists.
         results_path.parent.mkdir(parents = True, exist_ok = True)
@@ -151,34 +153,41 @@ class TrainingRecord():
                 # Write header.
                 DictWriter(f, fieldnames = FIELDS).writeheader()
 
+        # Prepare metadata.
+        metadata:   Dict[str, Any] =    {
+                                            "network_id":   network_id,
+                                            "dataset_id":   dataset_id,
+                                            "seed":         seed,
+                                            "device":       str(device),
+                                            "epochs":       epochs,
+                                            "metric":       metric,
+                                            "sampler":      sampler,
+                                            "order":        order,
+                                            "accuracy":     accuracy,
+                                            "loss":         loss,
+                                            "record_file":  str(record_path)
+                                        }
+
         # Open file for writing.
         with open(results_path, "a", newline = "") as f:
 
             # Write record.
-            DictWriter(f, fieldnames = FIELDS).writerow({
-                "network_id":   network_id,
-                "dataset_id":   dataset_id,
-                "seed":         seed,
-                "device":       str(device),
-                "epochs":       epochs,
-                "metric":       metric,
-                "sampler":      sampler,
-                "order":        order,
-                "accuracy":     accuracy,
-                "loss":         loss,
-            })
+            DictWriter(f, fieldnames = FIELDS).writerow(metadata)
 
         # Communicate master record.
         self.__logger__.info(f"Result saved to master record at {results_path.absolute}")
 
         # Open verbose record for writing...
-        with open(self._output_path_ / f"training_record_seed-{seed}_{epochs}-epochs.json", "w") as file_out:
+        with open(record_path, "w") as file_out:
+
+            # Prepare record with metadata.
+            metadata.update(self.to_dict())
 
             # Save verbose training record.
-            dump(self.to_dict(), file_out, indent = 2, default = str)
+            dump(metadata, file_out, indent = 2, default = str)
 
         # Communicate verbose record path.
-        self.__logger__.info(f"""Verbose record saved to {self._output_path_ / f"training_record_seed-{seed}_{epochs}-epochs.json"}""")
+        self.__logger__.info(f"""Verbose record saved to {record_path}""")
 
     def to_dict(self) -> Dict[str, Any]:
         """# Dictionary Representation of Training Record.
@@ -193,10 +202,11 @@ class TrainingRecord():
         return  {
                     "epochs":               self._epochs_,
                     "best_epoch":           self.best_epoch,
-                    "avg_train_accuracy":   sum(self.train_accuracies)      / epoch_qty,
-                    "avg_train_loss":       sum(self.train_losses)          / epoch_qty,
-                    "avg_val_accuracy":     sum(self.validation_accuracies) / epoch_qty,
-                    "avg_val_losses":       sum(self.validation_losses)     / epoch_qty
+                    "best_val_accuracy":    self._epochs_[self.best_epoch]["validation"]["accuracy"],
+                    "final_train_accuracy": self.train_accuracies[-1],
+                    "final_train_loss":     self.train_losses[-1],
+                    "final_val_accuracy":   self.validation_accuracies[-1],
+                    "final_val_loss":       self.validation_losses[-1]
                 }
         
     # DUNDERS ======================================================================================
