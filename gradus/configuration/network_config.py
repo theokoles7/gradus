@@ -51,12 +51,12 @@ class NetworkConfig(Config):
                                         )
         
         artifacts.add_argument(
-            "--checkpoint-path",
-            dest =      "checkpoint_path",
+            "--weights-path",
+            dest =      "weights_path",
             type =      str,
-            default =   "checkpoints",
+            default =   ".cache/weights",
             help =      """Path to directory to/from which model checkpoint files can be 
-                        saved/loaded. Defaults to "./checkpoints/"."""
+                        saved/loaded. Defaults to "./.cache/weights/"."""
         )
 
         # Create sub-parser.

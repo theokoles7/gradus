@@ -44,8 +44,9 @@ def train_entry_point(
         * Dict[str, Any]:   Training results.
     """
     from logging                    import Logger
+    from pathlib                    import Path
 
-    from torch                      import no_grad, Tensor
+    from torch                      import no_grad, save, Tensor
     from torch.nn                   import Module
     from torch.nn.functional        import cross_entropy
     from torch.optim                import SGD
@@ -204,3 +205,19 @@ def train_entry_point(
         accuracy =      val_accuracy,
         loss =          val_loss
     )
+
+    # Define weights path.
+    weights_path:   Path =  Path(
+        f".cache/weights/"
+        f"{network_id}/{dataset_id}/"
+        f"weights_seed-{seed}_{epochs}-epochs.pth"
+    )
+
+    # Ensure weights path exists.
+    weights_path.parent.mkdir(parents = True, exist_ok = True)
+
+    # Save model weights.
+    save(network.state_dict(), weights_path)
+
+    # Communicate weights location.
+    logger.info(f"Weights saved to {weights_path}")
