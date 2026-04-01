@@ -43,18 +43,19 @@ def train_entry_point(
     ## Returns:
         * Dict[str, Any]:   Training results.
     """
-    from logging                import Logger
+    from logging                    import Logger
 
-    from torch                  import no_grad, Tensor
-    from torch.nn               import Module
-    from torch.nn.functional    import cross_entropy
-    from torch.optim            import SGD
-    from tqdm                   import tqdm
+    from torch                      import no_grad, Tensor
+    from torch.nn                   import Module
+    from torch.nn.functional        import cross_entropy
+    from torch.optim                import SGD
+    from torch.optim.lr_scheduler   import CosineAnnealingLR
+    from tqdm                       import tqdm
 
-    from gradus.artifacts       import TrainingRecord
-    from gradus.datasets        import Dataset
-    from gradus.registration    import DATASET_REGISTRY, NETWORK_REGISTRY
-    from gradus.utilities       import determine_device, get_logger, set_seed
+    from gradus.artifacts           import TrainingRecord
+    from gradus.datasets            import Dataset
+    from gradus.registration        import DATASET_REGISTRY, NETWORK_REGISTRY
+    from gradus.utilities           import determine_device, get_logger, set_seed
 
     # Initialize logger.
     logger:         Logger =            get_logger("train-process")
@@ -87,6 +88,12 @@ def train_entry_point(
                                             lr =            0.01,
                                             weight_decay =  5e-4,
                                             momentum =      0.9
+                                        )
+
+    # Define learning rate annealing scheduler.
+    scheduler:      CosineAnnealingLR = CosineAnnealingLR(
+                                            optimizer =     optimizer,
+                                            T_max =         epochs
                                         )
     
     # Initialize training data map.
@@ -180,6 +187,9 @@ def train_entry_point(
             f"Validation Accuracy = {val_accuracy:.4f}; "
             f"Validation Loss = {val_loss:.4f}"
         )
+
+        # Anneal learning rate schedule.
+        scheduler.step()
 
     # Save results to master record.
     train_record.save_to_master(
