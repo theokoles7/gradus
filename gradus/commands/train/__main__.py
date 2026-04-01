@@ -85,7 +85,7 @@ def train_entry_point(
     # Initialize optimizer.
     optimizer:      SGD =               SGD(
                                             params =        network.parameters(),
-                                            lr =            0.01,
+                                            lr =            0.1,
                                             weight_decay =  5e-4,
                                             momentum =      0.9
                                         )
