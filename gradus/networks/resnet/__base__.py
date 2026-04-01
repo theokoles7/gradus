@@ -49,18 +49,18 @@ class ResNet(Module):
         self._dilation_:        int =               1
 
         # If input size is 64 or less, we'll use smaller convolution on first layer.
-        small_stem:             bool =              input_shape[1] <= 64
+        self._small_stem_:      bool =              input_shape[1] <= 64
 
         # If using small stem, state such.
-        if small_stem: self.__logger__.info(f"Using small stem configuration")
+        if self._small_stem_: self.__logger__.info(f"Using small stem configuration")
 
         # Define layers.
         self._conv1_:           Conv2d =            Conv2d(
                                                         in_channels =   input_shape[0],
                                                         out_channels =  self._in_planes_,
-                                                        kernel_size =   3 if small_stem else 7,
-                                                        stride =        1 if small_stem else 2,
-                                                        padding =       1 if small_stem else 3,
+                                                        kernel_size =   3 if self._small_stem_ else 7,
+                                                        stride =        1 if self._small_stem_ else 2,
+                                                        padding =       1 if self._small_stem_ else 3,
                                                         bias =          False
                                                     )
         self._bn1_:             BatchNorm2d =       BatchNorm2d(
@@ -123,7 +123,10 @@ class ResNet(Module):
             * Tensor:   Output tensor.
         """
         # Convolutional layer.
-        X_1:    Tensor =    self._max_pool_(self._relu_(self._bn1_(self._conv1_(X))))
+        X_1:    Tensor =    self._relu_(self._bn1_(self._conv1_(X)))
+
+        # If not using small stem, use max pooling.
+        if not self._small_stem_: X_1 = self._max_pool_(X_1)
 
         # First block layer.
         X_2:    Tensor =    self._layer1_(X_1)
