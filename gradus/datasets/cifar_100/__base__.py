@@ -5,16 +5,16 @@ CIFAR-100 dataset implementation.
 
 __all__ = ["CIFAR_100"]
 
-from typing                                 import List
+from typing                             import List
 
-from torch.utils.data                       import DataLoader
-from torchvision.datasets                   import CIFAR100
-from torchvision.transforms                 import Compose, Normalize, Resize, ToTensor
+from torch.utils.data                   import DataLoader
+from torchvision.datasets               import CIFAR100
+from torchvision.transforms             import Compose, Normalize, RandomCrop, RandomHorizontalFlip, ToTensor
 
-from gradus.datasets.cifar_100.__args__     import CIFAR100Config
-from gradus.datasets.protocol               import Dataset
-from gradus.registration                    import register_dataset
-from gradus.utilities                       import get_system_core_count
+from gradus.datasets.cifar_100.__args__ import CIFAR100Config
+from gradus.datasets.protocol           import Dataset
+from gradus.registration                import register_dataset
+from gradus.utilities                   import get_system_core_count
 
 @register_dataset(
     id =        "cifar-100",
@@ -46,26 +46,26 @@ class CIFAR_100(Dataset):
             * max_workers   (int):  Maximum number of workers allocated to data preprocessing. 
                                     Defaults to max system core count.
         """        
-        # Define transform.
-        self._transform_:       Compose =       Compose([
-                                                    # Resize images to 32x32.
-                                                    Resize(size = 32),
-
-                                                    # Convert images to tensors.
-                                                    ToTensor(),
-
-                                                    # Normalize pixel values.
-                                                    Normalize(
-                                                        mean =  (0.5071, 0.4865, 0.4409),
-                                                        std =   (0.2673, 0.2564, 0.2761)
-                                                    )
-                                                ])
-        
         # Load training data.
         self._train_data_:      CIFAR100 =      CIFAR100(
                                                     root =      root,
                                                     train =     True,
-                                                    transform = self._transform_,
+                                                    transform = Compose([
+                                                                    # Randomly crop with padding.
+                                                                    RandomCrop(size = 32, padding = 4),
+
+                                                                    # Randomly flip horizontally.
+                                                                    RandomHorizontalFlip(),
+
+                                                                    # Convert images to tensors.
+                                                                    ToTensor(),
+
+                                                                    # Normalize pixel values.
+                                                                    Normalize(
+                                                                        mean =  (0.5071, 0.4865, 0.4409),
+                                                                        std =   (0.2673, 0.2564, 0.2761)
+                                                                    )
+                                                                ]),
                                                     download =  True
                                                 )
         
@@ -73,7 +73,16 @@ class CIFAR_100(Dataset):
         self._test_data_:       CIFAR100 =      CIFAR100(
                                                     root =      root,
                                                     train =     False,
-                                                    transform = self._transform_,
+                                                    transform = Compose([
+                                                                    # Convert images to tensors.
+                                                                    ToTensor(),
+
+                                                                    # Normalize pixel values.
+                                                                    Normalize(
+                                                                        mean =  (0.5071, 0.4865, 0.4409),
+                                                                        std =   (0.2673, 0.2564, 0.2761)
+                                                                    )
+                                                                ]),
                                                     download =  True
                                                 )
         

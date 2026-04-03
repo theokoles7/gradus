@@ -9,7 +9,7 @@ from typing                         import List
 
 from torch.utils.data               import DataLoader
 from torchvision.datasets           import MNIST as t_MNIST
-from torchvision.transforms         import Compose, Normalize, ToTensor
+from torchvision.transforms         import Compose, Normalize, RandomCrop, RandomHorizontalFlip, ToTensor
 
 from gradus.datasets.mnist.__args__ import MNISTConfig
 from gradus.datasets.protocol       import Dataset
@@ -63,7 +63,22 @@ class MNIST(Dataset):
                                                     root =      root,
                                                     train =     True,
                                                     download =  True,
-                                                    transform = self._transform_
+                                                    transform = Compose([
+                                                                    # Randomly crop with padding.
+                                                                    RandomCrop(size = 32, padding = 4),
+
+                                                                    # Randomly flip horizontally.
+                                                                    RandomHorizontalFlip(),
+
+                                                                    # Convert images to tensors.
+                                                                    ToTensor(),
+
+                                                                    # Normalize pixel values.
+                                                                    Normalize(
+                                                                        mean =  (0.5,),
+                                                                        std =   (0.5,)
+                                                                    )
+                                                                ]),
                                                 )
         
         # Load test data.
@@ -71,7 +86,16 @@ class MNIST(Dataset):
                                                     root =      root,
                                                     train =     False,
                                                     download =  True,
-                                                    transform = self._transform_
+                                                    transform = Compose([
+                                                                    # Convert images to tensors.
+                                                                    ToTensor(),
+
+                                                                    # Normalize pixel values.
+                                                                    Normalize(
+                                                                        mean =  (0.5,),
+                                                                        std =   (0.5,)
+                                                                    )
+                                                                ]),
                                                 )
         
         # Initialize train loader.

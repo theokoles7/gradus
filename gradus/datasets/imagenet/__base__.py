@@ -9,7 +9,7 @@ from typing                             import List
 
 from torch.utils.data                   import DataLoader
 from torchvision.datasets               import ImageNet as tv_ImageNet
-from torchvision.transforms             import CenterCrop, Compose, Normalize, Resize, ToTensor
+from torchvision.transforms             import Compose, Normalize, RandomCrop, RandomHorizontalFlip, ToTensor
 
 from gradus.datasets.imagenet.__args__  import ImageNetConfig
 from gradus.datasets.protocol           import Dataset
@@ -54,36 +54,42 @@ class ImageNet(Dataset):
             * shuffle       (bool): Shuffle training split. Defaults to False.
             * max_workers   (int):  DataLoader worker threads. Defaults to system core count.
         """
-        # Define standard ImageNet transform.
-        self._transform_:       Compose =       Compose([
-                                                    # Resize images to 256x256.
-                                                    Resize(size = 256),
-
-                                                    # Crop to 224x224.
-                                                    CenterCrop(size = 224),
-
-                                                    # Convert images to tensors.
-                                                    ToTensor(),
-
-                                                    # Normalize pixel values.
-                                                    Normalize(
-                                                        mean =  (0.485, 0.456, 0.406),
-                                                        std =   (0.229, 0.224, 0.225)
-                                                    )
-                                                ])
-
         # Load training data.
         self._train_data_:      tv_ImageNet =   tv_ImageNet(
                                                     root =      root,
                                                     split =     "train",
-                                                    transform = self._transform_
+                                                    transform = Compose([
+                                                                    # Randomly crop with padding.
+                                                                    RandomCrop(size = 224, padding = 4),
+
+                                                                    # Randomly flip horizontally.
+                                                                    RandomHorizontalFlip(),
+
+                                                                    # Convert images to tensors.
+                                                                    ToTensor(),
+
+                                                                    # Normalize pixel values.
+                                                                    Normalize(
+                                                                        mean =  (0.485, 0.456, 0.406),
+                                                                        std =   (0.229, 0.224, 0.225)
+                                                                    )
+                                                                ]),
                                                 )
 
         # Load test data.
         self._test_data_:       tv_ImageNet =   tv_ImageNet(
                                                     root =      root,
                                                     split =     "val",
-                                                    transform = self._transform_
+                                                    transform = Compose([
+                                                                    # Convert images to tensors.
+                                                                    ToTensor(),
+
+                                                                    # Normalize pixel values.
+                                                                    Normalize(
+                                                                        mean =  (0.485, 0.456, 0.406),
+                                                                        std =   (0.229, 0.224, 0.225)
+                                                                    )
+                                                                ]),
                                                 )
 
         # Initialize train loader.
