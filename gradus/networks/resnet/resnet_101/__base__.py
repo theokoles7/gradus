@@ -8,7 +8,7 @@ __all__ = ["ResNet101"]
 from typing                                     import Tuple
 
 from gradus.networks.resnet.__base__            import ResNet
-from gradus.networks.resnet.blocks              import ResNetBlock
+from gradus.networks.resnet.blocks              import ResNetBottleneck
 from gradus.networks.resnet.resnet_101.__args__ import ResNet101Config
 from gradus.registration                        import register_network
 
@@ -36,7 +36,7 @@ class ResNet101(ResNet):
         """
         # Initialize network.
         super(ResNet101, self).__init__(
-            block =                 ResNetBlock,
+            block =                 ResNetBottleneck,
             layers =                [3, 4, 23, 3],
             input_shape =           input_shape,
             num_classes =           num_classes,

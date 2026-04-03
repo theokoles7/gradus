@@ -47,7 +47,7 @@ class ResNetBottleneck(Module):
         super(ResNetBottleneck, self).__init__()
 
         # If invalid arguments are provided...
-        if (stride != 1 or in_planes != planes * self._expansion_) and downsample is None:
+        if (stride != 1 or in_planes != planes * self.expansion) and downsample is None:
 
             # Report invalid configuration.
             raise   ValueError(
@@ -78,14 +78,14 @@ class ResNetBottleneck(Module):
                                                 )
         self._conv3_:       Conv2d =            Conv2d(
                                                     in_channels =   planes,
-                                                    out_channels =  planes * self._expansion_,
+                                                    out_channels =  planes * self.expansion,
                                                     kernel_size =   1,
                                                     stride =        1,
                                                     bias =          False
                                                 )
         self._bn1_:         BatchNorm2d =       BatchNorm2d(num_features = planes)
         self._bn2_:         BatchNorm2d =       BatchNorm2d(num_features = planes)
-        self._bn3_:         BatchNorm2d =       BatchNorm2d(num_features = planes * self._expansion_)
+        self._bn3_:         BatchNorm2d =       BatchNorm2d(num_features = planes * self.expansion)
         self._relu_:        ReLU =              ReLU(inplace = True)
         self._downsample_:  Optional[Module] =  downsample
         
