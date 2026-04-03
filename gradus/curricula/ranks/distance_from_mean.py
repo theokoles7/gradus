@@ -1,4 +1,4 @@
-"""# gradus.scheduling.ranks.distance_from_mean
+"""# gradus.curricula.ranks.distance_from_mean
 
 Distance from mean ranking implementation.
 """

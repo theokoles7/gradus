@@ -1,4 +1,4 @@
-"""# gradus.scheduling.ranks.ascending
+"""# gradus.curricula.ranks.ascending
 
 Ascending ranking implementation.
 """
