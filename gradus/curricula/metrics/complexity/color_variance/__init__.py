@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.color_variance
+"""# gradus.curricula.metrics.complexity.color_variance
 
 Color variance complexity metric module.
 """
@@ -8,4 +8,4 @@ __all__ =   [
                 "color_variance",
             ]
 
-from gradus.metrics.complexity.color_variance.__base__  import *
+from gradus.curricula.metrics.complexity.color_variance.__base__    import *

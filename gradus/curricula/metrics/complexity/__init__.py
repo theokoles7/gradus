@@ -21,9 +21,9 @@ __all__ =   [
                 "wavelet_entropy",
             ]
 
-from gradus.metrics.complexity.color_variance       import *
-from gradus.metrics.complexity.compression_ratio    import *
-from gradus.metrics.complexity.edge_density         import *
-from gradus.metrics.complexity.spatial_frequency    import *
-from gradus.metrics.complexity.wavelet_energy       import *
-from gradus.metrics.complexity.wavelet_entropy      import *
+from gradus.curricula.metrics.complexity.color_variance     import *
+from gradus.curricula.metrics.complexity.compression_ratio  import *
+from gradus.curricula.metrics.complexity.edge_density       import *
+from gradus.curricula.metrics.complexity.spatial_frequency  import *
+from gradus.curricula.metrics.complexity.wavelet_energy     import *
+from gradus.curricula.metrics.complexity.wavelet_entropy    import *

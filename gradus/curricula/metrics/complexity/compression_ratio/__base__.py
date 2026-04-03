@@ -81,8 +81,8 @@ class CompressionRatio():
 
 # QUICK-ACCESS UTILITY =============================================================================
 
-from gradus.metrics.complexity.compression_ratio.__args__   import CompressionRatioConfig
-from gradus.registration                                    import register_metric
+from gradus.curricula.metrics.complexity.compression_ratio.__args__ import CompressionRatioConfig
+from gradus.registration                                            import register_metric
 
 @register_metric(
     id =        "compression-ratio",

@@ -92,8 +92,8 @@ class EdgeDensity():
 
 # QUICK-ACCESS UTILITY =============================================================================
 
-from gradus.metrics.complexity.edge_density.__args__    import EdgeDensityConfig
-from gradus.registration                                import register_metric
+from gradus.curricula.metrics.complexity.edge_density.__args__  import EdgeDensityConfig
+from gradus.registration                                        import register_metric
 
 @register_metric(
     id =        "edge-density",

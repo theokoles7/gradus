@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.wavelet_energy
+"""# gradus.curricula.metrics.complexity.wavelet_energy
 
 Measurement of wavelet energy of an image.
 """
@@ -80,8 +80,8 @@ class WaveletEnergy():
 
 # QUICK-ACCESS UTILITY =============================================================================
 
-from gradus.metrics.complexity.wavelet_energy.__args__  import WaveletEnergyConfig
-from gradus.registration                                import register_metric
+from gradus.curricula.metrics.complexity.wavelet_energy.__args__    import WaveletEnergyConfig
+from gradus.registration                                            import register_metric
 
 @register_metric(
     id =        "wavelet-energy",

@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.wavelet_entropy
+"""# gradus.curricula.metrics.complexity.wavelet_entropy
 
 Measurement of wavelet entropy of an image.
 """
@@ -104,8 +104,8 @@ class WaveletEntropy():
 
 # QUICK-ACCESS UTILITY =============================================================================
 
-from gradus.metrics.complexity.wavelet_entropy.__args__ import WaveletEntropyConfig
-from gradus.registration                                import register_metric
+from gradus.curricula.metrics.complexity.wavelet_entropy.__args__   import WaveletEntropyConfig
+from gradus.registration                                            import register_metric
 
 @register_metric(
     id =        "wavelet-entropy",

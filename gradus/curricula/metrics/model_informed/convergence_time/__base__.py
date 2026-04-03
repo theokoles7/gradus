@@ -1,4 +1,4 @@
-"""# gradus.metrics.model_informed.convergence_time
+"""# gradus.curricula.metrics.model_informed.convergence_time
 
 Measurement of the time required for a model's loss to converge for an individual image sample.
 """
@@ -158,8 +158,8 @@ class TimeToConvergence():
 
 # QUICK-ACCESS UTILITY =============================================================================
 
-from gradus.metrics.model_informed.convergence_time.__args__    import ConvergenceTimeConfig
-from gradus.registration                                        import register_metric
+from gradus.curricula.metrics.model_informed.convergence_time.__args__  import ConvergenceTimeConfig
+from gradus.registration                                                import register_metric
 
 @register_metric(
     id =        "convergence-time",

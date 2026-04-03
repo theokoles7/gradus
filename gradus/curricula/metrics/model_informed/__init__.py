@@ -1,4 +1,4 @@
-"""# gradus.metrics.model_informed
+"""# gradus.curricula.metrics.model_informed
 
 Image sample metrics that are informed by model learning activity.
 """
@@ -13,5 +13,5 @@ __all__ =   [
                 "time_to_saturation",
             ]
 
-from gradus.metrics.model_informed.convergence_time import *
-from gradus.metrics.model_informed.saturation_time  import *
+from gradus.curricula.metrics.model_informed.convergence_time   import *
+from gradus.curricula.metrics.model_informed.saturation_time    import *

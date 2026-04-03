@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.spatial_frequency
+"""# gradus.curricula.metrics.complexity.spatial_frequency
 
 Measurement of image's spatial frequency.
 """
@@ -74,8 +74,8 @@ class SpatialFrequency():
 
 # QUICK-ACCESS UTILITY =============================================================================
 
-from gradus.metrics.complexity.spatial_frequency.__args__   import SpatialFrequencyConfig
-from gradus.registration                                    import register_metric
+from gradus.curricula.metrics.complexity.spatial_frequency.__args__ import SpatialFrequencyConfig
+from gradus.registration                                            import register_metric
 
 @register_metric(
     id =        "spatial-frequency",

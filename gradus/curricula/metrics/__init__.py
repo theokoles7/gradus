@@ -30,6 +30,6 @@ __all__ =   [
                 "time_to_saturation",
             ]
 
-from gradus.metrics.complexity      import *
-from gradus.metrics.model_informed  import *
-from gradus.metrics.protocol        import Metric
+from gradus.curricula.metrics.complexity        import *
+from gradus.curricula.metrics.model_informed    import *
+from gradus.curricula.metrics.protocol          import Metric

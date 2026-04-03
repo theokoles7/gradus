@@ -1,4 +1,4 @@
-"""# gradus.metrics.model_informed.saturation_time
+"""# gradus.curricula.metrics.model_informed.saturation_time
 
 Measurement of the time required for a model's weights to saturate for an individual image sample.
 """
@@ -262,8 +262,8 @@ class TimeToSaturation():
 
 # QUICK-ACCESS UTILITY =============================================================================
 
-from gradus.metrics.model_informed.saturation_time.__args__ import SaturationTimeConfig
-from gradus.registration                                    import register_metric
+from gradus.curricula.metrics.model_informed.saturation_time.__args__   import SaturationTimeConfig
+from gradus.registration                                                import register_metric
 
 @register_metric(
     id =        "saturation-time",

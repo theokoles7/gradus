@@ -50,8 +50,8 @@ class ColorVariance():
 
 # QUICK-ACCESS UTILITY =============================================================================
 
-from gradus.metrics.complexity.color_variance.__args__  import ColorVarianceConfig
-from gradus.registration                                import register_metric
+from gradus.curricula.metrics.complexity.color_variance.__args__    import ColorVarianceConfig
+from gradus.registration                                            import register_metric
 
 @register_metric(
     id =        "color-variance",
