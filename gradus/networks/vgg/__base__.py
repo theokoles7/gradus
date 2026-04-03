@@ -38,20 +38,29 @@ class VGG(Module):
         # Initialize logger.
         self.__logger__:    Logger =            get_logger("vgg")
 
+        # If input size is 64 or less, we'll use smaller convolution on first layer.
+        self._small_stem_:  bool =              input_shape[1] <= 64
+
+        # If using small stem, state such.
+        if self._small_stem_: self.__logger__.info(f"Using small stem configuration")
+
         # Build feature extraction layers.
         self._features_:    Sequential =        self._make_layers_(
                                                     config =        layer_config,
                                                     in_channels =   input_shape[0],
-                                                    batch_norm =    batch_norm
+                                                    batch_norm =    batch_norm,
+                                                    small_stem =    self._small_stem_
                                                 )
 
         # Adaptive pooling to fixed spatial size.
-        self._avg_pool_:    AdaptiveAvgPool2d = AdaptiveAvgPool2d(output_size = (7, 7))
+        self._avg_pool_:    AdaptiveAvgPool2d = AdaptiveAvgPool2d(
+                                                    output_size = (1, 1) if self._small_stem_ else (7, 7)
+                                                )
 
         # Classification layers.
         self._classifier_:  Sequential =        Sequential(
                                                     Linear(
-                                                        in_features =   512 * 7 * 7,
+                                                        in_features =   512 * (1 if self._small_stem_ else 49),
                                                         out_features =  4096
                                                     ),
                                                     ReLU(inplace = True),
@@ -133,7 +142,8 @@ class VGG(Module):
     def _make_layers_(
         config:         List[Union[int, str]],
         in_channels:    int,
-        batch_norm:     bool =                  True
+        batch_norm:     bool =                  True,
+        small_stem:     bool =                  False
     ) -> Sequential:
         """# Build VGG Feature Extraction Layers.
 
@@ -141,18 +151,29 @@ class VGG(Module):
             * config        (List): Layer configuration list.
             * in_channels   (int):  Number of input channels.
             * batch_norm    (bool): Use batch normalization. Defaults to True.
+            * small_stem    (bool): Make layer for images of size 64 or less.
 
         ## Returns:
             * Sequential:   Feature extraction layers.
         """
         # Initialize list of layers.
-        layers: List[Module] = []
+        layers:     List[Module] =  []
+
+        # Count max-pool markers so we can skip the last one.
+        pool_total: int =           sum(1 for v in config if v == "M")
+        pool_seen:  int =           0
 
         # For each entry in configuration...
         for v in config:
 
             # If max pooling marker...
             if v == "M":
+
+                # Increment pool count.
+                pool_seen += 1
+
+                # # For small inputs, skip the final max-pool to preserve spatial resolution.
+                if small_stem and pool_seen == pool_total: continue
 
                 # Add max pooling layer.
                 layers.append(MaxPool2d(kernel_size = 2, stride = 2))
