@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.wavelet_energy.args
+"""# gradus.curricula.metrics.complexity.wavelet_energy.args
 
 Argument definitions & parsing for wavelet-energy metric.
 """

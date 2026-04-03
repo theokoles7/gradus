@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.color_variance.args
+"""# gradus.curricula.metrics.complexity.color_variance.args
 
 Argument definitions & parsing for color-variance metric.
 """

@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.color_variance.base
+"""# gradus.curricula.metrics.complexity.color_variance.base
 
 Measurement of channel-wise color variance of an image sample.
 """

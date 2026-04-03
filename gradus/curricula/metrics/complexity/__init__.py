@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity
+"""# gradus.curricula.metrics.complexity
 
 Complexity-related image sample metrics.
 """

@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.edge_density.args
+"""# gradus.curricula.metrics.complexity.edge_density.args
 
 Argument definitions & parsing for edge-density metric.
 """

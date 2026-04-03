@@ -1,4 +1,4 @@
-"""# gradus.metrics.model_informed.saturation_time
+"""# gradus.curricula.metrics.model_informed.saturation_time
 
 Time-to-Saturation model-informed metric module.
 """

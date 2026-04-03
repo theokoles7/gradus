@@ -1,4 +1,4 @@
-"""# gradus.metrics.protocol
+"""# gradus.curricula.metrics.protocol
 
 Abstract metric protocol.
 """
@@ -27,7 +27,7 @@ class Metric(ABC):
 
         # Define properties.
         self._id_:          str =               metric_id
-        self._value_:       Union[int, float]
+        self._value_:       Union[int, float] = None
 
     # PROPERTIES ===================================================================================
 

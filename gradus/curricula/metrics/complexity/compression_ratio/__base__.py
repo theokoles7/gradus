@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.compression_ratio.base
+"""# gradus.curricula.metrics.complexity.compression_ratio.base
 
 Measurement of image's JPEG compression ratio.
 """

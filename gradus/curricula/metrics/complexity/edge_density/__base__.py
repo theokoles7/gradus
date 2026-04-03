@@ -1,4 +1,4 @@
-"""# gradus.metrics.complexity.edge_density
+"""# gradus.curricula.metrics.complexity.edge_density
 
 Measurement of image's edge density using Canny edge detection.
 """
