@@ -1,9 +1,9 @@
-"""# gradus.curricula.ranks.ascending
+"""# gradus.curricula.ranks.lexicographic
 
-Ascending ranking implementation.
+Lexicographic composite metrics ranking implementation.
 """
 
-__all__ = ["Ascending"]
+__all__ = ["Lexicographic"]
 
 from pathlib                            import Path
 from typing                             import List, override, Union
@@ -14,37 +14,31 @@ from gradus.curricula.ranks.protocol    import Rank
 from gradus.registration                import register_rank
 
 @register_rank(
-    id =    "ascending",
-    tags =  ["monotonic"]
+    id =    "lexicographic",
+    tags =  ["composite"]
 )
-class Ascending(Rank):
-    """# Ascending Curriculum Rank"""
+class Lexicographic(Rank):
+    """# Lexicographic Curriculum Ranking"""
 
     def __init__(self,
         scores:     DataFrame,
         metric:     Union[str, List[str]],
         cache_dir:  Union[str, Path] =      ".cache/ranks"
     ):
-        """# Instantiate Ascending Curriculum Ranking.
+        """# Instantiate Lexicographic Curriculum Ranking.
 
         ## Args:
             * scores    (DataFrame):        Metric scores sheet.
-            * metric    (str | List[str]):  Metric by which sample indices should be ranked.
+            * metric    (str | List[str]):  Metrics by which sample indices should be ranked.
             * cache_dir (str | Path):       Path at which ranked indices will be cached for future 
                                             use. Defaults to ".cache/ranks".
         """
         # Define properties.
         self._metric_:  List[str] = [metric] if isinstance(metric, str) else metric
 
-        # If more than one metric is specified...
-        if len(self._metric_) > 1:  raise ValueError(
-                                        f"Ascending ranking only supports a single metric;"
-                                        f"got {len(self._metric_)}"
-                                    )
-
         # Initialize protocol.
-        super(Ascending, self).__init__(
-            rank_id =   "ascending",
+        super(Lexicographic, self).__init__(
+            rank_id =   "lexicographic",
             scores =    scores,
             cache_dir = cache_dir
         )
@@ -53,7 +47,7 @@ class Ascending(Rank):
 
     @override
     def _rank_(self) -> List[int]:
-        """# Sort Indices in Ascending Order According to Specified Metric.
+        """# Sort Indices in Lexicographic Order According to Specified Metrics.
 
         ## Returns:
             * List[int]:    Ranked indices.

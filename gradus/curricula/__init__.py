@@ -36,9 +36,11 @@ __all__ =   [
 
                 # RANKS ============================================================================
 
-                "ascending",
-                "descending",
-                "distance_from_mean",
+                "Ascending",
+                "Descending", 
+                "DistanceFromMean",
+                "Lexicographic",
+                "Weighted",
             ]
 
 from gradus.curricula.protocol  import Curriculum
