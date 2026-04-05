@@ -199,12 +199,12 @@ def register_rank(
     """
     # Define decorator.
     def decorator(
-        fn: Callable
-    ) -> Callable:
+        cls:    Type
+    ) -> Type:
         """# Curriculum Ranking Registration Decorator.
 
         ## Args:
-            * fn    (Callable): Rank ordering scheme function.
+            * fn    (Callable): Rank ordering scheme class.
         """
         # Load registry.
         from gradus.registration    import RANK_REGISTRY
@@ -212,12 +212,12 @@ def register_rank(
         # Register curriculum ranking.
         RANK_REGISTRY.register(
             entry_id =  id,
-            fn =        fn,
+            cls =       cls,
             tags =      tags
         )
 
-        # Expose ranking function.
-        return fn
+        # Expose ranking class.
+        return cls
     
     # Expose decorator.
     return decorator

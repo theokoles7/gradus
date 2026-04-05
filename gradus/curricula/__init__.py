@@ -36,6 +36,10 @@ __all__ =   [
 
                 # RANKS ============================================================================
 
+                # Protocol
+                "Rank",
+
+                # Concrete
                 "Ascending",
                 "Descending", 
                 "DistanceFromMean",

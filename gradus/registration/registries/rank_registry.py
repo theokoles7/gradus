@@ -5,6 +5,7 @@ Rank registry system implementation.
 
 __all__ = ["RankRegistry"]
 
+from pathlib                        import Path
 from typing                         import Dict, List, override, Union
 
 from pandas                         import DataFrame
@@ -31,7 +32,8 @@ class RankRegistry(Registry):
     def sort_indices(self,
         rank_id:    str,
         metric:     Union[str, List[str]],
-        scores:     DataFrame
+        scores:     DataFrame,
+        cache_dir:  Union[str, Path] =      ".cache/ranks"
     ) -> List[int]:
         """# Rank Indices Based on Metric Scores.
 
@@ -39,11 +41,17 @@ class RankRegistry(Registry):
             * rank_id   (str):              Identifier of ranking scheme being used to sort indices.
             * metric    (str | List[str]):  Metric(s) by which samples will be ranked.
             * scores    (DataFrame):        Metric scores data sheet.
+            * cache_dir (str | Path):       Directory under which keyed indices will be cached. 
+                                            Defaults to "./.cache/ranks/".
 
         ## Returns:
             * List[int]:    Indices sorted by order of metric + ranking scheme.
         """
-        return self.get_entry(entry_id = rank_id).fn(metric, scores)
+        return self.get_entry(entry_id = rank_id).cls(
+            scores =    scores,
+            metric =    metric,
+            cache_dir = cache_dir
+        ).indices
         
     # HELPERS ======================================================================================
 
