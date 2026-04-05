@@ -70,7 +70,7 @@ class Weighted(Rank):
         
         # Compute Pearson correlation of all metrics against anchor.
         correlations:   Series =    normalized.corrwith(
-                                        normalized[self._metric_]
+                                        normalized[self._metric_[0]]
                                     ).drop(self._metric_)
         
         # Take absolute value & normalize to sum to 1.
