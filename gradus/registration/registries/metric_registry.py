@@ -17,7 +17,7 @@ class MetricRegistry(Registry):
 
     def __init__(self):
         """# Instantiate Metric Registry System"""
-        super(MetricRegistry, self).__init__(id = "metrics")
+        super(MetricRegistry, self).__init__(id = "curricula.metrics")
 
     # PROPERTIES ===================================================================================
 

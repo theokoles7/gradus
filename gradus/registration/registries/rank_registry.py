@@ -17,7 +17,7 @@ class RankRegistry(Registry):
 
     def __init__(self):
         """# Instantiate Rank Registry System."""
-        super(RankRegistry, self).__init__(id = "ranks")
+        super(RankRegistry, self).__init__(id = "curricula.ranks")
 
     # PROPERTIES ===================================================================================
 
