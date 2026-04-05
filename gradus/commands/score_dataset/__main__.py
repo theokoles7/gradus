@@ -93,52 +93,34 @@ def score_dataset_entry_point(
     # Log process initiation.
     logger.info(f"Scoring {dataset_id.upper()} ({len(dataset.train_data)} samples; metrics: {scheduled})")
 
-    # For each sample...
-    for i in tqdm(
-        range(len(dataset.train_data)),
-        desc =  f"Scoring {dataset_id.upper()}",
-        unit =  "sample(s)"
-    ):            
-    #     # Unpack sample & label.
-    #     sample: Tensor =            dataset.train_data[i][0]
-    #     label:  Any =               dataset.train_data[i][1]
+    try:# For each sample...
+        for i in tqdm(
+            range(len(dataset.train_data)),
+            desc =  f"Scoring {dataset_id.upper()}",
+            unit =  "sample(s)"
+        ):   
 
-    #     # Initialize row with index & label.
-    #     row:    Dict[str, Any] =    {"index": i, "class": dataset.classes[label]}
-
-    #     # For each scheduled metric...
-    #     for metric_id in scheduled:
-
-    #         # If metric has already been computed for sample...
-    #         if scores.get(index = i, metric = )
-
-    #         # Calculate metric for sample.
-    #         try: row[metric_id] = METRIC_REGISTRY.get_entry(metric_id).fn(sample)
-
-    #         # Record failed caluclations as NAN.
-    #         except Exception as e: row[metric_id] = float("nan"); raise
-
-        # Determine which metrics still need computing for this sample.
-        to_compute: List[str] = [m for m in scheduled if i in unscored[m]]
- 
-        # If nothing to compute for this sample, move on.
-        if not to_compute: continue
- 
-        # Unpack sample & label.
-        sample: Tensor =            dataset.train_data[i][0]
-        label:  Any =               dataset.train_data[i][1]
- 
-        # Compute each outstanding metric for this sample.
-        row:    Dict[str, Any] =    {}
- 
-        for metric_id in to_compute:
-            try:    row[metric_id] = METRIC_REGISTRY.get_entry(metric_id).fn(sample)
-            except Exception as e:
-                row[metric_id] = float("nan")
-                logger.warning(f"Metric '{metric_id}' failed for sample {i}: {e}")
- 
-        # Record row.
-        scores.record_row(index = i, label = dataset.classes[label], scores = row)
- 
+            # Determine which metrics still need computing for this sample.
+            to_compute: List[str] = [m for m in scheduled if i in unscored[m]]
+    
+            # If nothing to compute for this sample, move on.
+            if not to_compute: continue
+    
+            # Unpack sample & label.
+            sample: Tensor =            dataset.train_data[i][0]
+            label:  Any =               dataset.train_data[i][1]
+    
+            # Compute each outstanding metric for this sample.
+            row:    Dict[str, Any] =    {}
+    
+            for metric_id in to_compute:
+                try:    row[metric_id] = METRIC_REGISTRY.get_entry(metric_id).fn(sample)
+                except Exception as e:
+                    row[metric_id] = float("nan")
+                    logger.warning(f"Metric '{metric_id}' failed for sample {i}: {e}")
+    
+            # Record row.
+            scores.record_row(index = i, label = dataset.classes[label], scores = row)
+    
     # Provide results to outer process.
-    return scores.save()
+    finally: return scores.save()

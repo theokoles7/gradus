@@ -9,7 +9,8 @@ from typing                             import List
 
 from torch.utils.data                   import DataLoader
 from torchvision.datasets               import ImageNet as tv_ImageNet
-from torchvision.transforms             import Compose, Normalize, RandomCrop, RandomHorizontalFlip, ToTensor
+from torchvision.transforms             import Compose, Normalize, RandomCrop, RandomHorizontalFlip, \
+                                               Resize, ToTensor
 
 from gradus.datasets.imagenet.__args__  import ImageNetConfig
 from gradus.datasets.protocol           import Dataset
@@ -59,6 +60,9 @@ class ImageNet(Dataset):
                                                     root =      root,
                                                     split =     "train",
                                                     transform = Compose([
+                                                                    # Resize to 256x256.
+                                                                    Resize(size = 256),
+
                                                                     # Randomly crop with padding.
                                                                     RandomCrop(size = 224, padding = 4),
 
