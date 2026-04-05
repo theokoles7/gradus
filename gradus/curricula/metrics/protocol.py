@@ -12,7 +12,7 @@ from typing             import Union
 from gradus.utilities   import get_logger
 
 class Metric(ABC):
-    """# Abstract Metric"""
+    """# Abstract Curriculum Metric"""
 
     def __init__(self,
         metric_id:  str
@@ -23,7 +23,7 @@ class Metric(ABC):
             * metric_id (str):  Metric identifier.
         """
         # Initialize logger.
-        self.__logger__:    Logger =            get_logger(metric_id)
+        self.__logger__:    Logger =            get_logger(f"{metric_id}-metric")
 
         # Define properties.
         self._id_:          str =               metric_id
