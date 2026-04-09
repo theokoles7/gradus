@@ -7,7 +7,8 @@ name =              "gradus"
 dynamic =           ["version", "readme"]
 description =       "Experiments in quantifying image complexity and determining the efficacy of curriculum learning in image classification tasks."
 authors =           [
-                        { name = "Gabriel C. Trahan", email = "gabriel.trahan1@louisiana.edu" }
+                        { name = "Gabriel C. Trahan",   email = "gabriel.trahan1@louisiana.edu" },
+                        { name = "Kameron ",            email = "kameron.duhon1@louisiana.edu" }
                     ]
 license =           { text = "GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007" }
 requires-python =   ">=3.10"
@@ -19,6 +20,7 @@ dependencies =      [
                         "pandas",
                         "Pillow",
                         "pyarrow",
+                        "pytest",
                         "PyWavelets",
                         "scikit-learn",
                         "seaborn",

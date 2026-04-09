@@ -43,8 +43,14 @@ def get_version() -> str:
 setup(
     name =                          "gradus",
     version =                       get_version(),
-    author =                        "Gabriel C. Trahan",
-    author_email =                  "gabriel.trahan1@louisiana.edu",
+    author =                        (
+                                        "Gabriel C. Trahan,"
+                                        "Kameron P. Duhon"
+                                    ),
+    author_email =                  (
+                                        "gabriel.trahan1@louisiana.edu,"
+                                        "kameron.duhon1@louisiana.edu"
+                                    ),
     description =                   """Experiments in quantifying image complexity and determining 
                                     the efficacy of curriculum learning in image classification 
                                     tasks.""",
@@ -62,6 +68,7 @@ setup(
                                         "pandas",
                                         "Pillow",
                                         "pyarrow",
+                                        "pytest",
                                         "PyWavelets",
                                         "scikit-learn",
                                         "seaborn",
