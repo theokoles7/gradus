@@ -72,6 +72,7 @@ def train_entry_point(
     # Load dataset.
     dataset:        Dataset =           DATASET_REGISTRY.load_dataset(
                                             dataset_id =    dataset_id,
+                                            seed =          seed,
                                             **kwargs
                                         )
 
