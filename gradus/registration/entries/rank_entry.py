@@ -19,7 +19,7 @@ class RankEntry(Entry):
 
     def __init__(self,
         id:     str,
-        cls:    Type[Rank],
+        cls:    Type["Rank"],
         tags:   List[str] = []
     ):
         """# Instantiate Rank Registration Entry.
@@ -33,11 +33,11 @@ class RankEntry(Entry):
         super(RankEntry, self).__init__(id = id, tags = tags)
 
         # Define properties.
-        self._cls_: Type[Rank] =   cls
+        self._cls_: Type["Rank"] =   cls
 
     # PROPERTIES ===================================================================================
 
     @property
-    def cls(self) -> Type[Rank]:
+    def cls(self) -> Type["Rank"]:
         """# Curriculum Ranking Class"""
         return self._cls_
