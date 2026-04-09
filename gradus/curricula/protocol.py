@@ -18,21 +18,26 @@ class Curriculum(BatchSampler):
     """# Curriculum Sampler"""
 
     def __init__(self,
+        dataset_id: str,
         scores:     DatasetMetrics,
         metrics:    Union[str, List[str]],
         rank:       str,
         scope:      str,
-        batch_size: int =                   128
+        batch_size: int =                   128,
+        seed:       int =                   1
     ):
         """# Instantiate Curriculum.
 
         ## Args:
+            * dataset_id    (str):              Identifier of dataset to whom curriculum will be 
+                                                applied.
             * scores        (DatasetMetrics):   Dataset metrics artifact.
             * metrics       (str | List[str]):  Metric(s) by which samples will be ranked.
             * rank          (str):              Order by which samples will be sorted, based on 
                                                 rank.
             * scope         (str):              Scope of sorting.
             * batch_size    (int):              Number of samples in each batch. Defaults to 128.
+            * seed          (int):              Random number generation seed. Defaults to 1.
         """
         # Initialize logger.
         self.__logger__:    Logger =    get_logger("curriculum")
@@ -45,10 +50,12 @@ class Curriculum(BatchSampler):
         )
 
         # Define properties.
+        self._dataset_id_:  str =               dataset_id
         self._scores_:      DatasetMetrics =    scores
         self._metrics_:     List[str] =         [metrics] if isinstance(metrics, str) else metrics
         self._rank_:        str =               rank
         self._scope_:       str =               scope
+        self._seed_:        int =               seed
         self._batch_size_:  int =               batch_size
         self._batches_:     List[List[int]]
 
@@ -106,9 +113,11 @@ class Curriculum(BatchSampler):
 
         # Rank indices.
         indices:    List[int] = RANK_REGISTRY.sort_indices(
-                                    rank_id =   self._rank_,
-                                    metric =    self._metrics_,
-                                    scores =    self._scores_.scores
+                                    rank_id =       self._rank_,
+                                    dataset_id =    self._dataset_id_,
+                                    metric =        self._metrics_,
+                                    scores =        self._scores_.scores,
+                                    seed =          self._seed_
                                 )
         
         # Break out into batches.

@@ -5,39 +5,61 @@ Curriculum ranking protocol implementation.
 
 __all__ = ["Rank"]
 
-from abc                import ABC, abstractmethod
-from logging            import Logger
-from pathlib            import Path
-from typing             import List, Union
+from abc        import ABC, abstractmethod
+from pathlib    import Path
+from typing     import List, Union
 
-from pandas             import DataFrame
-
-from gradus.utilities   import get_logger
+from pandas     import DataFrame
 
 class Rank(ABC):
     """# Abstract Curriculum Ranking"""
 
+    _metric_:   List[str]
+
     def __init__(self,
         rank_id:    str,
+        dataset_id: str,
         scores:     DataFrame,
-        cache_dir:  Union[str, Path] =  ".cache/ranks"
+        seed:       int =                   1,
+        cache_dir:  Union[str, Path] =      ".cache/ranks"
     ):
         """# Instantiate Curriculum Ranking.
 
         ## Args:
-            * rank_id   (str):          Rank identifier.
-            * scores    (DataFrame):    Dataset metric scores.
-            * cache_dir (str | Path):   Directory under which keyed indices will be cached. Defaults 
-                                        to "./.cache/ranks/".
+            * rank_id       (str):              Rank identifier.
+            * dataset_id    (str):              Identifier of dataset whose samples are being 
+                                                ranked.
+            * scores        (DataFrame):        Dataset metric scores.
+            * seed          (int):              Random number generation seed. Defaults to 1.
+            * cache_dir     (str | Path):       Directory under which keyed indices will be cached. 
+                                                Defaults to "./.cache/ranks/".
         """
+        from hashlib            import md5
+        from json               import dumps
+        from logging            import Logger
+
+        from gradus.utilities   import get_logger
+
         # Initialize logger.
         self.__logger__:    Logger =    get_logger(f"{rank_id}-ranker")
 
         # Define properties.
         self._id_:          str =       rank_id
+        self._dataset_id_:  str =       dataset_id
         self._scores_:      DataFrame = scores
+        self._seed_:        int =       seed
+
+        # Resolve cache paths.
         self._cache_dir_:   Path =      Path(cache_dir)
-        self._cache_path_:  Path =      self._cache_dir_ / f"{self._id_}.npy"
+        self._cache_key_:   str =       md5(dumps({
+                                            "rank":     self._id_,
+                                            "dataset":  self._dataset_id_,
+                                            "metric":   self._metric_,
+                                            "seed":     self._seed_
+                                        }).encode()).hexdigest()
+        self._cache_path_:  Path =      self._cache_dir_ / f"{self._cache_key_}.npy"
+
+        # Rank indices.
         self._indices_:     List[int] = self._load_()                   \
                                         if self._cache_path_.exists()   \
                                         else self._compute_and_save_()

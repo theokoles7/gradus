@@ -21,28 +21,38 @@ class Weighted(Rank):
     """# Weighted Curriculum Ranking"""
 
     def __init__(self,
-        scores:     DataFrame,
         metric:     Union[str, List[str]],
+        dataset_id: str,
+        scores:     DataFrame,
+        seed:       int =                   1,
         cache_dir:  Union[str, Path] =      ".cache/ranks"
     ):
         """# Instantiate Weighted Curriculum Ranking.
 
         ## Args:
             * scores    (DataFrame):        Metric scores sheet.
-            * metric    (str | List[str]):  Metric by which sample indices should be ranked. This 
+            * metric    (str | List[str]):  Metric by which sample indices should be anchored. This 
                                             serves as the anchor metric, upon which Peasron 
                                             correlation will be determined for weighting.
             * cache_dir (str | Path):       Path at which ranked indices will be cached for future 
                                             use. Defaults to ".cache/ranks".
         """
-        # Define properties.
+        # Define metric.
         self._metric_:  List[str] = [metric] if isinstance(metric, str) else metric
+
+        # If more than one metric is specified...
+        if len(self._metric_) > 1:  raise ValueError(
+                                        f"Weighted ranking only supports a single metric anchor;"
+                                        f"got {len(self._metric_)}"
+                                    )
 
         # Initialize protocol.
         super(Weighted, self).__init__(
             rank_id =   "weighted",
-            scores =    scores,
-            cache_dir = cache_dir
+            dataset_id =    dataset_id,
+            scores =        scores,
+            seed =          seed,
+            cache_dir =     cache_dir
         )
 
     # HELPERS ======================================================================================
@@ -78,7 +88,7 @@ class Weighted(Rank):
         weights =                   weights / weights.sum()
 
         # Compute weighted composite score (anchor gets weight 1.0, others are relative).
-        composite:      Series =    normalized[self._metric_] + \
+        composite:      Series =    normalized[self._metric_[0]] + \
                                     normalized[weights.index].mul(weights).sum(axis = 1)
         
         # Assign composite score and sort.

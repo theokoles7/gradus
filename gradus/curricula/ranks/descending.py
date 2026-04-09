@@ -21,17 +21,22 @@ class Descending(Rank):
     """# Descending Curriculum Rank"""
 
     def __init__(self,
-        scores:     DataFrame,
         metric:     Union[str, List[str]],
+        dataset_id: str,
+        scores:     DataFrame,
+        seed:       int =                   1,
         cache_dir:  Union[str, Path] =      ".cache/ranks"
     ):
         """# Instantiate Descending Curriculum Ranking.
 
         ## Args:
-            * scores    (DataFrame):        Metric scores sheet.
-            * metrics   (str | List[str]):  Metric by which sample indices should be ranked.
-            * cache_dir (str | Path):       Path at which ranked indices will be cached for future 
-                                            use. Defaults to ".cache/ranks".
+            * metric        (str | List[str]):  Metric(s) by which ranking will be determined.
+            * dataset_id    (str):              Identifier of dataset whose samples are being 
+                                                ranked.
+            * scores        (DataFrame):        Dataset metric scores.
+            * seed          (int):              Random number generation seed. Defaults to 1.
+            * cache_dir     (str | Path):       Directory under which keyed indices will be cached. 
+                                                Defaults to "./.cache/ranks/".
         """
         # Define properties.
         self._metric_:  List[str] = [metric] if isinstance(metric, str) else metric
@@ -44,9 +49,11 @@ class Descending(Rank):
 
         # Initialize protocol.
         super(Descending, self).__init__(
-            rank_id =   "descending",
-            scores =    scores,
-            cache_dir = cache_dir
+            rank_id =       "descending",
+            dataset_id =    dataset_id,
+            scores =        scores,
+            seed =          seed,
+            cache_dir =     cache_dir
         )
 
     # HELPERS ======================================================================================
