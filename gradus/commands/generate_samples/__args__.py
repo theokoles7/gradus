@@ -45,7 +45,7 @@ class GenerateSamplesConfig(CommandConfig):
             "--output-path",
             dest =      "output_path",
             type =      str,
-            default =   ".cache/samples",
+            default =   ".cache/test-samples",
             help =      """Path at which test images will be written. Defaults to 
-                        "./.cache/samples/"."""
+                        "./.cache/test-samples/"."""
         )
