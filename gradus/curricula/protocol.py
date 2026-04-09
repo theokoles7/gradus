@@ -20,7 +20,7 @@ class Curriculum(BatchSampler):
     def __init__(self,
         dataset_id: str,
         scores:     DatasetMetrics,
-        metrics:    Union[str, List[str]],
+        metric:     Union[str, List[str]],
         rank:       str,
         scope:      str,
         batch_size: int =                   128,
@@ -32,7 +32,7 @@ class Curriculum(BatchSampler):
             * dataset_id    (str):              Identifier of dataset to whom curriculum will be 
                                                 applied.
             * scores        (DatasetMetrics):   Dataset metrics artifact.
-            * metrics       (str | List[str]):  Metric(s) by which samples will be ranked.
+            * metric        (str | List[str]):  Metric(s) by which samples will be ranked.
             * rank          (str):              Order by which samples will be sorted, based on 
                                                 rank.
             * scope         (str):              Scope of sorting.
@@ -52,7 +52,7 @@ class Curriculum(BatchSampler):
         # Define properties.
         self._dataset_id_:  str =               dataset_id
         self._scores_:      DatasetMetrics =    scores
-        self._metrics_:     List[str] =         [metrics] if isinstance(metrics, str) else metrics
+        self._metric_:      List[str] =         [metric] if isinstance(metric, str) else metric
         self._rank_:        str =               rank
         self._scope_:       str =               scope
         self._seed_:        int =               seed
@@ -84,7 +84,7 @@ class Curriculum(BatchSampler):
         """
         # Log action.
         self.__logger__.info(
-            f"Constructing batch-wise ranks (metrics = {self._metrics_}, rank = {self._rank_})"
+            f"Constructing batch-wise ranks (metrics = {self._metric_}, rank = {self._rank_})"
         )
 
         # Extract indices.
@@ -93,9 +93,11 @@ class Curriculum(BatchSampler):
         # Construct batch-wise ranks.
         return  [
             RANK_REGISTRY.sort_indices(
-                rank_id =   self._rank_,
-                metric =    self._metrics_,
-                scores =    self._scores_.scores.iloc[indices[i:i + self._batch_size_]]
+                rank_id =       self._rank_,
+                dataset_id =    self._dataset_id_,
+                metric =        self._metric_,
+                scores =        self._scores_.scores.iloc[indices[i:i + self._batch_size_]],
+                seed =          self._seed_
             )
             for i in range(0, len(indices), self._batch_size_)
         ]
@@ -108,14 +110,14 @@ class Curriculum(BatchSampler):
         """
         # Log action.
         self.__logger__.info(
-            f"Constructing holistic ranks (metrics = {self._metrics_}, rank = {self._rank_})"
+            f"Constructing holistic ranks (metrics = {self._metric_}, rank = {self._rank_})"
         )
 
         # Rank indices.
         indices:    List[int] = RANK_REGISTRY.sort_indices(
                                     rank_id =       self._rank_,
                                     dataset_id =    self._dataset_id_,
-                                    metric =        self._metrics_,
+                                    metric =        self._metric_,
                                     scores =        self._scores_.scores,
                                     seed =          self._seed_
                                 )

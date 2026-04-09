@@ -6,8 +6,9 @@ Abstract dataset protocol.
 __all__ = ["Dataset"]
 
 from abc                import ABC
+from functools          import cached_property
 from logging            import Logger
-from typing             import List, Tuple
+from typing             import List, Optional, Tuple, Union
 
 from torch.utils.data   import DataLoader, Dataset as t_Dataset
 
@@ -16,140 +17,169 @@ from gradus.utilities   import get_logger, get_system_core_count
 class Dataset(ABC):
     """# Gradus Dataset Wrapper & Protocol"""
 
-    # Declare properties.
-    _channels_:     int
-    _classes_:      List[str]
-    _height_:       int
-    _num_classes_:  int
-    _size_:         int
-    _test_data_:    t_Dataset
-    _test_loader_:  DataLoader
-    _train_data_:   t_Dataset
-    _train_loader_: DataLoader
-    _width_:        int
-
     def __init__(self,
-        id: str
+        id:                 str,
+        train_data:         t_Dataset,
+        test_data:          t_Dataset,
+        batch_size:         int =                               128,
+        shuffle:            bool =                              False,
+        max_workers:        int =                               get_system_core_count(),
+        metric:             Optional[Union[str, List[str]]] =   None,
+        rank:               str =                               "ascending",
+        scope:              str =                               "holistic",
+        normalize_classes:  bool =                              False,
+        seed:               int =                               1,
     ):
         """# Instantiate Dataset.
 
         ## Args:
-            * id    (str):  Dataset identifier/name.
+            * id            (str):                      Dataset identifier/name.
+            * train_data    (Dataset):                  Dataset's training split.
+            * test_data     (Dataset):                  Dataset's test/validation split.
+            * batch_size    (int):                      Number of sample to include in training 
+                                                        batches.
+            * shuffle       (bool):                     Shuffle training samples.
+            * max_workers   (int):                      Maximum number of workers allocated to data 
+                                                        preprocessing. Defaults to max system core 
+                                                        count.
+            * metric        (str | List[str] | None):   Metric by which samples will be ranked 
+                                                        (constitutes curriculum).
+            * rank          (str):                      Order by which dataset samples will be 
+                                                        sorted, based on rank. Defaults to 
+                                                        "ascending".
+            * scope         (str):                      Scope of sorting (i.e., "holistic", 
+                                                        "batch-wise"). Defaults to "holistic".
+            * seed          (int):                      Random number generation seed.
         """
         # Initialize logger.
-        self.__logger__:    Logger =    get_logger(f"{id}-dataset")
+        self.__logger__:        Logger =        get_logger(f"{id}-dataset")
 
         # Define properties.
-        self._id_:          str =       id
+        self._id_:                  str =           id
+        self._train_data_:          t_Dataset =     train_data
+        self._test_data_:           t_Dataset =     test_data
+        self._batch_size_:          int =           int(batch_size)
+        self._max_workers_:         int =           max_workers
+        self._shuffle_:             bool =          shuffle
+        self._normalize_classes_:   bool =          normalize_classes
+        self._seed_:                int =           seed
+
+        # Define curriculum.
+        self._metric_:              Optional[str] = metric
+        self._rank_:                str =           rank
+        self._scope_:               str =           scope
 
         # Debug initialization.
         self.__logger__.debug(f"Initialized {self}")
 
     # PROPERTIES ===================================================================================
 
-    @property
+    @cached_property
     def channels(self) -> int:
         """# Input Channels"""
-        return self._channels_
+        return self.input_shape[0]
     
-    @property
+    @cached_property
     def classes(self) -> List[str]:
         """# Classification Classes"""
-        return self._classes_
+        return self._train_data_.classes
     
-    @property
+    @cached_property
     def height(self) -> int:
         """# Input Height"""
-        return self._height_
+        return self.input_shape[1]
 
-    @property
+    @cached_property
     def input_shape(self) -> Tuple[int, int, int]:
         """# Expected Input Shape (C, H, W)"""
-        return self._channels_, self._height_, self._width_
+        return tuple(self._train_data_[0][0].shape)
     
-    @property
+    @cached_property
     def num_classes(self) -> int:
         """# Number of Classes"""
-        return self._num_classes_
+        return len(self.classes)
     
-    @property
+    @cached_property
     def size(self) -> int:
         """# Sample Quantity"""
-        return self._size_
+        return len(self._train_data_) + len(self._test_data_)
     
     @property
     def test_data(self) -> t_Dataset:
         """# Test Split Data"""
         return self._test_data_
     
-    @property
+    @cached_property
     def test_loader(self) -> DataLoader:
         """# Test Split Loader"""
-        return self._test_loader_
+        return  DataLoader(
+                    dataset =       self._test_data_,
+                    batch_size =    self._batch_size_,
+                    num_workers =   self._max_workers_,
+                    pin_memory =    True,
+                    shuffle =       False,
+                    drop_last =     False
+                )
     
     @property
     def train_data(self) -> t_Dataset:
         """# Train Split Data"""
         return self._train_data_
     
-    @property
+    @cached_property
     def train_loader(self) -> DataLoader:
         """# Train Split Loader"""
-        return self._train_loader_
-    
-    @property
-    def width(self) -> int:
-        """# Input Width"""
-        return self._width_
-    
-    # HELPERS ======================================================================================
-
-    def _resolve_dataloader_(self,
-        data:               t_Dataset,
-        batch_size:         int =       64,
-        max_workers:        int =       get_system_core_count(),
-        metric:             str =       None,
-        rank:               str =       "ascending",
-        scope:              str =       "holistic",
-        normalize_classes:  bool =      False
-    ) -> DataLoader:
-        """# Instantiate DataLoader.
-
-        ## Args:
-            * data              (Dataset):  Dataset being loaded.
-            * batch_size        (int):      Number of samples to load into batches. Defaults to 64.
-            * max_workers       (int):      Maximum number of workers allocated to data 
-                                            preprocessing. Defaults to max system core count.
-            * metric            (str):      Metric by which dataset samples will be ranked.
-            * rank              (str):      Order by which dataset samples will be sorted, based on 
-                                            rank. Defaults to "ascending".
-            * scope             (str):      Scope of sorting (i.e., "holistic", "batch-wise"). 
-                                            Defaults to "holistic".
-            * normalize_classes (bool):     Distribute classes across batches as equally as 
-                                            possible.
-
-        ## Returns:
-            * DataLoader:   Instantiated dataloader.
-        """
-        from gradus.registration    import METRIC_REGISTRY
-
         # If a metric is not specified...
-        if metric is None:
+        if self._metric_ is None:
 
             # Provide a generic dataloader, randomly shuffled.
             return  DataLoader(
-                        dataset =       data,
-                        batch_size =    batch_size,
-                        num_workers =   max_workers,
+                        dataset =       self._train_data_,
+                        batch_size =    self._batch_size_,
+                        num_workers =   self._max_workers_,
+                        shuffle =       self._shuffle_,
                         pin_memory =    True,
-                        shuffle =       True,
                         drop_last =     False
                     )
         
-        # TODO: Otherwise...
+        # Otherwise, load curriculum imports.
+        from gradus.artifacts   import DatasetMetrics
+        from gradus.curricula   import Curriculum
+
+        # Initialize dataset metric scores.
+        scores: DatasetMetrics =    DatasetMetrics(
+                                        dataset_id =    self._id_,
+                                        num_samples =   len(self._train_data_),
+                                        seed =          self._seed_,
+                                        scores_path =   ".cache/scores"
+                                    )
+        
+        # Initialize data loader with curriculum.
+        return  DataLoader(
+            dataset =       self._train_data_,
+            batch_sampler = Curriculum(
+                                dataset_id =    self._id_,
+                                scores =        scores,
+                                metric =        self._metric_,
+                                rank =          self._rank_,
+                                scope =         self._scope_,
+                                batch_size =    self._batch_size_,
+                                seed =          self._seed_ 
+                            ),
+            num_workers =   self._max_workers_,
+            pin_memory =    True
+        )
+    
+    @cached_property
+    def width(self) -> int:
+        """# Input Width"""
+        return self.input_shape[2]
     
     # DUNDERS ======================================================================================
 
     def __repr__(self) -> str:
         """# Dataset Object Representation"""
-        return f"""<{self._id_.upper()}Dataset({self._num_classes_} classes, {self._size_} samples)>"""
+        return  (
+                    f"""<{self._id_.upper()}Dataset({self.num_classes} classes, """
+                    f"""{self.size} samples)>"""
+                )

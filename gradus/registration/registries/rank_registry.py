@@ -31,26 +31,33 @@ class RankRegistry(Registry):
 
     def sort_indices(self,
         rank_id:    str,
+        dataset_id: str,
         metric:     Union[str, List[str]],
         scores:     DataFrame,
+        seed:       int =                   1,
         cache_dir:  Union[str, Path] =      ".cache/ranks"
     ) -> List[int]:
         """# Rank Indices Based on Metric Scores.
 
         ## Args:
-            * rank_id   (str):              Identifier of ranking scheme being used to sort indices.
-            * metric    (str | List[str]):  Metric(s) by which samples will be ranked.
-            * scores    (DataFrame):        Metric scores data sheet.
-            * cache_dir (str | Path):       Directory under which keyed indices will be cached. 
-                                            Defaults to "./.cache/ranks/".
+            * rank_id       (str):              Identifier of ranking scheme being used to sort indices.
+            * dataset_id    (str):              Identifier of dataset whose samples are being 
+                                                ranked.
+            * metric        (str | List[str]):  Metric(s) by which samples will be ranked.
+            * scores        (DataFrame):        Metric scores data sheet.
+            * seed          (int):              Random number generation seed.
+            * cache_dir     (str | Path):       Directory under which keyed indices will be cached. 
+                                                Defaults to "./.cache/ranks/".
 
         ## Returns:
             * List[int]:    Indices sorted by order of metric + ranking scheme.
         """
         return self.get_entry(entry_id = rank_id).cls(
-            scores =    scores,
-            metric =    metric,
-            cache_dir = cache_dir
+            dataset_id =    dataset_id,
+            scores =        scores,
+            metric =        metric,
+            seed =          seed,
+            cache_dir =     cache_dir
         ).indices
         
     # HELPERS ======================================================================================
