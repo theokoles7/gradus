@@ -19,7 +19,6 @@ class MetricEntry(Entry):
     def __init__(self,
         id:     str,
         cls:    Type["Metric"],
-        fn:     Callable,
         config: "MetricConfig",
         tags:   List[str] =     []
     ):
@@ -28,7 +27,6 @@ class MetricEntry(Entry):
         ## Args:
             * id        (str):          Metric identifier.
             * cls       (Type[Metric]): Metric class.
-            * fn        (Callable):     Quick-access function.
             * config    (MetricConfig): Metric configuration handler.
             * tags      (List[str]):    Taxonomical keywords applicable to metric.
         """
@@ -37,7 +35,6 @@ class MetricEntry(Entry):
 
         # Define properties.
         self._cls_: Type["Metric"] =    cls
-        self._fn_:  Callable =          fn
 
     # PROPERTIES ===================================================================================
 
@@ -45,8 +42,3 @@ class MetricEntry(Entry):
     def cls(self) -> Type["Metric"]:
         """# Metric Class"""
         return self._cls_
-    
-    @property
-    def fn(self) -> Callable:
-        """# Metric Quick-Access Function"""
-        return self._fn_

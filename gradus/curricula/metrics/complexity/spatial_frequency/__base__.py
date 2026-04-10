@@ -3,18 +3,22 @@
 Measurement of image's spatial frequency.
 """
 
-__all__ =   [
-                "SpatialFrequency",
-                "spatial_frequency",
-            ]
+__all__ = ["SpatialFrequency"]
 
-from functools          import cached_property
-from typing             import Union
+from functools                                                      import cached_property
+from typing                                                         import override, Union
 
-from torch              import device as t_device, Tensor
+from torch                                                          import device as t_device, Tensor
 
-from gradus.utilities   import determine_device
+from gradus.curricula.metrics.complexity.spatial_frequency.__args__ import SpatialFrequencyConfig
+from gradus.registration                                            import register_metric
+from gradus.utilities                                               import determine_device
 
+@register_metric(
+    id =        "spatial-frequency",
+    config =    SpatialFrequencyConfig,
+    tags =      ["complexity"]
+)
 class SpatialFrequency():
     """# Spatial Frequency Measurement"""
 
@@ -70,28 +74,9 @@ class SpatialFrequency():
 
         # Calculate root mean squared of difference.
         return (row_diff ** 2).mean().item() ** 0.5
-
-
-# QUICK-ACCESS UTILITY =============================================================================
-
-from gradus.curricula.metrics.complexity.spatial_frequency.__args__ import SpatialFrequencyConfig
-from gradus.registration                                            import register_metric
-
-@register_metric(
-    id =        "spatial-frequency",
-    cls =       SpatialFrequency,
-    config =    SpatialFrequencyConfig,
-    tags =      ["complexity"]
-)
-def spatial_frequency(
-    sample: Tensor
-) -> float:
-    """# Calculate Sample's Spatial Frequency.
-
-    ## Args:
-        * sample    (Tensor):   Sample whose spatial frequency is being measured.
-
-    ## Returns:
-        * float:    Sample's overall (row + column) spatial frequency.
-    """
-    return SpatialFrequency(**locals()).frequency
+    
+    @override
+    @cached_property
+    def value(self) -> float:
+        """# Total Spatial Frequency of Image"""
+        return self.frequency

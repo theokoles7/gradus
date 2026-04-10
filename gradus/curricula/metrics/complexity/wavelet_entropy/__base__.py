@@ -3,18 +3,23 @@
 Measurement of wavelet entropy of an image.
 """
 
-__all__ =   [
-                "WaveletEntropy",
-                "wavelet_entropy",
-            ]
+__all__ = ["WaveletEntropy"]
 
-from functools      import cached_property
-from typing         import List
+from functools                                                      import cached_property
+from typing                                                         import List, override
 
-from numpy          import log2
-from numpy.typing   import NDArray
-from torch          import Tensor
+from numpy                                                          import log2
+from numpy.typing                                                   import NDArray
+from torch                                                          import Tensor
 
+from gradus.curricula.metrics.complexity.wavelet_entropy.__args__   import WaveletEntropyConfig
+from gradus.registration                                            import register_metric
+
+@register_metric(
+    id =        "wavelet-entropy",
+    config =    WaveletEntropyConfig,
+    tags =      ["complexity", "wavelet-decomposition"]
+)
 class WaveletEntropy():
     """# Wavelet Entropy Measurement"""
 
@@ -100,35 +105,9 @@ class WaveletEntropy():
     def total_energy(self) -> float:
         """# Sample's Total Wavelet Energy"""
         return sum(self.level_energies)
-
-
-# QUICK-ACCESS UTILITY =============================================================================
-
-from gradus.curricula.metrics.complexity.wavelet_entropy.__args__   import WaveletEntropyConfig
-from gradus.registration                                            import register_metric
-
-@register_metric(
-    id =        "wavelet-entropy",
-    cls =       WaveletEntropy,
-    config =    WaveletEntropyConfig,
-    tags =      ["complexity", "wavelet-decomposition"]
-)
-def wavelet_entropy(
-    # Sample
-    sample:     Tensor, *,
-
-    # Calculation parameters
-    wavelet:    str =   "db2",
-    level:      int =   None
-) -> float:
-    """# Calculate Sample's Wavelet Entropy.
-
-    ## Args:
-        * sample    (Tensor):   Sample whose wavelet entropy is being measured.
-        * wavelet   (str):      Wavelet family to use. Defaults to "db2".
-        * level     (int):      Decomposition level. Defaults to None (maximum possible).
-
-    ## Returns:
-        * float:    Sample's total wavelet entropy.
-    """
-    return WaveletEntropy(**locals()).normalized_entropy
+    
+    @override
+    @cached_property
+    def value(self) -> float:
+        """# Entropy Normalized by Maximum"""
+        return self.normalized_entropy

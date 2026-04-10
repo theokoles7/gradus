@@ -3,9 +3,6 @@
 Edge density complexity metric module.
 """
 
-__all__ =   [
-                "EdgeDensity",
-                "edge_density",
-            ]
+__all__ = ["EdgeDensity"]
 
 from gradus.curricula.metrics.complexity.edge_density.__base__  import *

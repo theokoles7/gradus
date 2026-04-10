@@ -3,9 +3,6 @@
 Spatial frequency complexity metric module.
 """
 
-__all__ =   [
-                "SpatialFrequency",
-                "spatial_frequency",
-            ]
+__all__ = ["SpatialFrequency"]
 
 from gradus.curricula.metrics.complexity.spatial_frequency.__base__ import *

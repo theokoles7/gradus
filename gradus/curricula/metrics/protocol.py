@@ -5,7 +5,7 @@ Abstract metric protocol.
 
 __all__ = ["Metric"]
 
-from abc                import ABC
+from abc                import ABC, abstractmethod
 from logging            import Logger
 from typing             import Union
 
@@ -37,13 +37,7 @@ class Metric(ABC):
         return self._id_
     
     @property
+    @abstractmethod
     def value(self) -> Union[int, float]:
         """# Overall Metric Value"""
-        # If metric has not been calculated yet...
-        if self._value_ is None:
-
-            # Report error.
-            raise AttributeError(f"Metric must be calculated before accessing value")
-        
-        # Provide metric value.
-        return self._value_
+        ...

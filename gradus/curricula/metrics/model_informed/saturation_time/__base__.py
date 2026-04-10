@@ -3,20 +3,25 @@
 Measurement of the time required for a model's weights to saturate for an individual image sample.
 """
 
-__all__ =   [
-                "TimeToSaturation",
-                "time_to_saturation",
-            ]
+__all__ = ["TimeToSaturation"]
 
-from typing             import Dict, List, Union
+from functools                                                          import cached_property
+from typing                                                             import Dict, List, override, Union
 
-from torch              import device as t_device, Tensor
-from torch.nn           import Module, MSELoss
-from torch.optim        import SGD
+from torch                                                              import device as t_device, Tensor
+from torch.nn                                                           import Module, MSELoss
+from torch.optim                                                        import SGD
 
-from gradus.networks    import Autoencoder
-from gradus.utilities   import determine_device
+from gradus.curricula.metrics.model_informed.saturation_time.__args__   import SaturationTimeConfig
+from gradus.networks                                                    import Autoencoder
+from gradus.registration                                                import register_metric
+from gradus.utilities                                                   import determine_device
 
+@register_metric(
+    id =        "saturation-time",
+    config =    SaturationTimeConfig,
+    tags =      ["model-informed"]
+)
 class TimeToSaturation():
     """# Time-to-Saturation Measurement"""
 
@@ -123,6 +128,12 @@ class TimeToSaturation():
     def saturated(self) -> bool:
         """# Are All Layers Saturated?"""
         return self._saturated_
+    
+    @override
+    @cached_property
+    def value(self) -> int:
+        """# Number of Iterations Executed"""
+        return self.iterations
     
     @property
     def weight_delta_history(self) -> Dict[str, List[float]]:
@@ -258,46 +269,3 @@ class TimeToSaturation():
                     for name, layer in self._learnable_layers_.items()
                     if not self._layer_saturated_[name]
                 }
-    
-
-# QUICK-ACCESS UTILITY =============================================================================
-
-from gradus.curricula.metrics.model_informed.saturation_time.__args__   import SaturationTimeConfig
-from gradus.registration                                                import register_metric
-
-@register_metric(
-    id =        "saturation-time",
-    cls =       TimeToSaturation,
-    config =    SaturationTimeConfig,
-    tags =      ["model-informed"]
-)
-def time_to_saturation(
-    # Sample & Model
-    sample:         Tensor, *,
-
-    # Calculation parameters
-    max_iterations: int =                   1000,
-    threshold:      float =                 1e-3,
-    window:         int =                   5,
-    learning_rate:  float =                 0.05,
-    device:         Union[str, t_device] =  "auto"
-) -> int:
-    """# Calculate Sample's Time-to-Saturation Metric.
-
-    ## Args:
-        * sample            (Tensor):       Sample whose saturation time is being measured.
-        * max_iterations    (int):          Maximum number of iterations allowed before 
-                                            abandoning measurement attempt. Defaults to 1000.
-        * threshold         (float):        Threshold under which the loss delta must fall to be 
-                                            considered "converged". Defaults to 1e-3.
-        * window            (int):          Number of consecutive iterations for which loss 
-                                            delta must remain under threshold to achieve "stable 
-                                            saturation". Defaults to 5.
-        * learning_rate     (float):        Learning rate with which optimizer will be 
-                                            configured. Defaults to 0.05.
-        * device            (str | device): Torch computation device. Defaults to "auto".
-
-    ## Returns:
-        * int:  Number of iterations required for weight saturation.
-    """
-    return TimeToSaturation(**locals()).iterations

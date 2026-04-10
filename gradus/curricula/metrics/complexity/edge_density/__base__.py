@@ -3,16 +3,22 @@
 Measurement of image's edge density using Canny edge detection.
 """
 
-__all__ =   [
-                "EdgeDensity",
-                "edge_density",
-            ]
+__all__ = ["EdgeDensity"]
 
-from functools      import cached_property
+from functools                                                  import cached_property
+from typing                                                     import override
 
-from numpy.typing   import NDArray
-from torch          import Tensor
+from numpy.typing                                               import NDArray
+from torch                                                      import Tensor
 
+from gradus.curricula.metrics.complexity.edge_density.__args__  import EdgeDensityConfig
+from gradus.registration                                        import register_metric
+
+@register_metric(
+    id =        "edge-density",
+    config =    EdgeDensityConfig,
+    tags =      ["complexity"]
+)
 class EdgeDensity():
     """# Edge Density Measurement"""
 
@@ -88,32 +94,9 @@ class EdgeDensity():
     def total_pixels(self) -> int:
         """# Total Number of Pixels in Image"""
         return self.edges.size
-
-
-# QUICK-ACCESS UTILITY =============================================================================
-
-from gradus.curricula.metrics.complexity.edge_density.__args__  import EdgeDensityConfig
-from gradus.registration                                        import register_metric
-
-@register_metric(
-    id =        "edge-density",
-    cls =       EdgeDensity,
-    config =    EdgeDensityConfig,
-    tags =      ["complexity"]
-)
-def edge_density(
-    sample: Tensor, *,
-    low:    int =   100,
-    high:   int =   200
-) -> float:
-    """# Calculate Sample's Edge Density.
-
-    ## Args:
-        * sample    (Tensor):   Sample whose edge density is being measured.
-        * low       (int):      Canny low threshold. Defaults to 100.
-        * high      (int):      Canny high threshold. Defaults to 200.
-
-    ## Returns:
-        * float:    Fraction of edge pixels. Higher = more complex.
-    """
-    return EdgeDensity(**locals()).density
+    
+    @override
+    @cached_property
+    def value(self) -> float:
+        """# Sample's Edge Density"""
+        return self.density

@@ -3,20 +3,25 @@
 Measurement of the time required for a model's loss to converge for an individual image sample.
 """
 
-__all__ =   [
-                "TimeToConvergence",
-                "time_to_convergence",
-            ]
+__all__ = ["TimeToConvergence"]
 
-from typing             import List, Union
+from functools                                                          import cached_property
+from typing                                                             import List, override, Union
 
-from torch              import device as t_device, Tensor
-from torch.nn           import MSELoss
-from torch.optim        import SGD
+from torch                                                              import device as t_device, Tensor
+from torch.nn                                                           import MSELoss
+from torch.optim                                                        import SGD
 
-from gradus.networks    import Autoencoder
-from gradus.utilities   import determine_device
+from gradus.curricula.metrics.model_informed.convergence_time.__args__  import ConvergenceTimeConfig
+from gradus.networks                                                    import Autoencoder
+from gradus.utilities                                                   import determine_device
+from gradus.registration                                                import register_metric
 
+@register_metric(
+    id =        "convergence-time",
+    config =    ConvergenceTimeConfig,
+    tags =      ["model-informed"]
+)
 class TimeToConvergence():
     """# Time-to-Convergence Measurement"""
 
@@ -93,6 +98,12 @@ class TimeToConvergence():
     def loss_history(self) -> List[float]:
         """# Loss Value at Each Iteration"""
         return self._loss_history_
+    
+    @override
+    @cached_property
+    def value(self) -> int:
+        """# Number of Iterations Executed"""
+        return self.iterations
 
     # HELPERS ======================================================================================
 
@@ -154,46 +165,3 @@ class TimeToConvergence():
 
             # Update previous loss tracker.
             prev_loss = current_loss
-
-
-# QUICK-ACCESS UTILITY =============================================================================
-
-from gradus.curricula.metrics.model_informed.convergence_time.__args__  import ConvergenceTimeConfig
-from gradus.registration                                                import register_metric
-
-@register_metric(
-    id =        "convergence-time",
-    cls =       TimeToConvergence,
-    config =    ConvergenceTimeConfig,
-    tags =      ["model-informed"]
-)
-def time_to_convergence(
-    # Sample
-    sample:         Tensor, *,
-
-    # Calculation parameters
-    max_iterations: int =                   1000,
-    threshold:      float =                 1e-3,
-    window:         int =                   5,
-    learning_rate:  float =                 0.05,
-    device:         Union[str, t_device] =  "auto"
-) -> int:
-    """# Calculate Sample's Time-to-Convergence Metric.
-
-    ## Args:
-        * sample            (Tensor):       Sample whose convergence time is being measured.
-        * max_iterations    (int):          Maximum number of iterations allowed before 
-                                            abandoning measurement attempt. Defaults to 1000.
-        * threshold         (float):        Threshold under which the loss delta must fall to be 
-                                            considered "converged". Defaults to 1e-3.
-        * window            (int):          Number of consecutive iterations for which loss 
-                                            delta must remain under threshold to achieve "stable 
-                                            convergence". Defaults to 5.
-        * learning_rate     (float):        Learning rate with which optimizer will be 
-                                            configured. Defaults to 0.05.
-        * device            (str | device): Torch computation device. Defaults to "auto".
-
-    ## Returns:
-        * int:  Number of iterations required for loss convergence.
-    """
-    return TimeToConvergence(**locals()).iterations

@@ -3,17 +3,22 @@
 Measurement of wavelet energy of an image.
 """
 
-__all__ =   [
-                "WaveletEnergy",
-                "wavelet_energy",
-            ]
+__all__ = ["WaveletEnergy"]
 
-from functools      import cached_property
-from typing         import List
+from functools                                                      import cached_property
+from typing                                                         import List, override
 
-from numpy.typing   import NDArray
-from torch          import Tensor
+from numpy.typing                                                   import NDArray
+from torch                                                          import Tensor
 
+from gradus.curricula.metrics.complexity.wavelet_energy.__args__    import WaveletEnergyConfig
+from gradus.registration                                            import register_metric
+
+@register_metric(
+    id =        "wavelet-energy",
+    config =    WaveletEnergyConfig,
+    tags =      ["complexity", "wavelet-decomposition"]
+)
 class WaveletEnergy():
     """# Wavelet Energy Measurement"""
 
@@ -76,35 +81,9 @@ class WaveletEnergy():
 
         # Provide total energy.
         return 0.0 if energy < 1e-6 else energy
-
-
-# QUICK-ACCESS UTILITY =============================================================================
-
-from gradus.curricula.metrics.complexity.wavelet_energy.__args__    import WaveletEnergyConfig
-from gradus.registration                                            import register_metric
-
-@register_metric(
-    id =        "wavelet-energy",
-    cls =       WaveletEnergy,
-    config =    WaveletEnergyConfig,
-    tags =      ["complexity", "wavelet-decomposition"]
-)
-def wavelet_energy(
-    # Sample
-    sample:     Tensor, *,
-
-    # Calculation parameters
-    wavelet:    str =   "db2",
-    level:      int =   None
-) -> float:
-    """# Calculate Sample's Wavelet Energy.
-
-    ## Args:
-        * sample    (Tensor):   Sample whose wavelet energy is being measured.
-        * wavelet   (str):      Wavelet family to use. Defaults to "db2".
-        * level     (int):      Decomposition level. Defaults to None (maximum possible).
-
-    ## Returns:
-        * float:    Sample's total wavelet energy.
-    """
-    return WaveletEnergy(**locals()).total_energy
+    
+    @override
+    @cached_property
+    def value(self) -> float:
+        """# Sample's Total Wavelet Energy"""
+        return self.total_energy

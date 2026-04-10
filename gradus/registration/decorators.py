@@ -99,7 +99,6 @@ def register_dataset(
 
 def register_metric(
     id:     str,
-    cls:    Type,
     config: Type["MetricConfig"],
     tags:   List[str] =             []
 ) -> Callable:
@@ -107,7 +106,6 @@ def register_metric(
 
     ## Args:
         * id        (str):                  Metric identifier.
-        * cls       (Type):                 Metric class.
         * config    (Type[MetricConfig]):   Metric configuration handler.
         * tags      (List[str]):            Taxonomical metric keywords.
 
@@ -116,12 +114,12 @@ def register_metric(
     """
     # Define decorator.
     def decorator(
-        fn: Callable
+        cls: Type
     ) -> Type:
         """# Metric Registration Decorator.
 
         ## Args:
-            * fn    (Callable): Metric quick-access function.
+            * cls   (Type): Metric class.
         """
         # Load registry.
         from gradus.registration    import METRIC_REGISTRY
@@ -130,13 +128,12 @@ def register_metric(
         METRIC_REGISTRY.register(
             entry_id =  id,
             cls =       cls,
-            fn =        fn,
             config =    config,
             tags =      tags
         )
 
         # Expose metric class.
-        return fn
+        return cls
     
     # Expose decorator.
     return decorator

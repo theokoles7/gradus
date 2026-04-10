@@ -3,16 +3,22 @@
 Measurement of image's JPEG compression ratio.
 """
 
-__all__ =   [
-                "CompressionRatio",
-                "compression_ratio",
-            ]
+__all__ = ["CompressionRatio"]
 
-from functools      import cached_property
+from functools                                                      import cached_property
+from typing                                                         import override
 
-from numpy.typing   import NDArray
-from torch          import Tensor
+from numpy.typing                                                   import NDArray
+from torch                                                          import Tensor
 
+from gradus.curricula.metrics.complexity.compression_ratio.__args__ import CompressionRatioConfig
+from gradus.registration                                            import register_metric
+
+@register_metric(
+    id =        "compression-ratio",
+    config =    CompressionRatioConfig,
+    tags =      ["complexity"]
+)
 class CompressionRatio():
     """# Compression Ratio Measurement"""
 
@@ -78,29 +84,8 @@ class CompressionRatio():
         """# Compression Ratio (Original / Compressed)"""
         return self.original_size / self.compressed_size
     
-
-# QUICK-ACCESS UTILITY =============================================================================
-
-from gradus.curricula.metrics.complexity.compression_ratio.__args__ import CompressionRatioConfig
-from gradus.registration                                            import register_metric
-
-@register_metric(
-    id =        "compression-ratio",
-    cls =       CompressionRatio,
-    config =    CompressionRatioConfig,
-    tags =      ["complexity"]
-)
-def compression_ratio(
-    sample:     Tensor, *,
-    quality:    int =   95
-) -> float:
-    """# Calculate Sample's Compression Ratio.
-
-    ## Args:
-        * sample    (Tensor):   Sample whose compression ratio is being measured.
-        * quality   (int):      JPEG compression quality (1-100). Defaults to 95.
-
-    ## Returns:
-        * float:    Sample's compression ratio.
-    """
-    return CompressionRatio(**locals()).ratio
+    @override
+    @cached_property
+    def value(self) -> float:
+        """# Compression Ratio (Original / Compressed)"""
+        return self.ratio

@@ -3,17 +3,22 @@
 Measurement of channel-wise color variance of an image sample.
 """
 
-__all__ =   [
-                "ColorVariance",
-                "color_variance",
-            ]
+__all__ = ["ColorVariance"]
 
-from functools          import cached_property
-from typing             import List, Union
+from functools                                                      import cached_property
+from typing                                                         import List, override, Union
 
-from torch              import device as t_device, Tensor
-from gradus.utilities   import determine_device
+from torch                                                          import device as t_device, Tensor
 
+from gradus.curricula.metrics.complexity.color_variance.__args__    import ColorVarianceConfig
+from gradus.registration                                            import register_metric
+from gradus.utilities                                               import determine_device
+
+@register_metric(
+    id =        "color-variance",
+    config =    ColorVarianceConfig,
+    tags =      ["complexity"]
+)
 class ColorVariance():
     """# Color Variance Measurement"""
 
@@ -46,30 +51,9 @@ class ColorVariance():
     def mean_variance(self) -> float:
         """# Mean of Channel-Wise Variances"""
         return sum(self.channel_variances) / len(self.channel_variances)
-        
-
-# QUICK-ACCESS UTILITY =============================================================================
-
-from gradus.curricula.metrics.complexity.color_variance.__args__    import ColorVarianceConfig
-from gradus.registration                                            import register_metric
-
-@register_metric(
-    id =        "color-variance",
-    cls =       ColorVariance,
-    config =    ColorVarianceConfig,
-    tags =      ["complexity"]
-)
-def color_variance(
-    sample: Tensor,
-    device: Union[str, t_device] =  "auto"
-) -> float:
-    """# Calculate Sample's Color Variance.
-
-    ## Args:
-        * sample    (Tensor):       Sample whose color variance is being measured.
-        * device    (str | device): Torch computation device. Defaults to "auto".
-
-    ## Returns:
-        * float:    Mean color variance of sample.
-    """
-    return ColorVariance(**locals()).mean_variance
+    
+    @override
+    @cached_property
+    def value(self) -> float:
+        """# Mean of Channel-Wise Variances"""
+        return self.mean_variance
