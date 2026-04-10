@@ -11,14 +11,6 @@ __all__ =   [
                 "SpatialFrequency",
                 "WaveletEnergy",
                 "WaveletEntropy",
-
-                # Quick-access functions
-                "compression_ratio",
-                "color_variance",
-                "edge_density",
-                "spatial_frequency",
-                "wavelet_energy",
-                "wavelet_entropy",
             ]
 
 from gradus.curricula.metrics.complexity.color_variance     import *
