@@ -114,7 +114,7 @@ def score_dataset_entry_point(
             row:    Dict[str, Any] =    {}
     
             for metric_id in to_compute:
-                try:    row[metric_id] = METRIC_REGISTRY.get_entry(metric_id).fn(sample)
+                try:    row[metric_id] = METRIC_REGISTRY.get_entry(metric_id).cls(sample).value
                 except Exception as e:
                     row[metric_id] = float("nan")
                     logger.warning(f"Metric '{metric_id}' failed for sample {i}: {e}")

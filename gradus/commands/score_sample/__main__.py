@@ -79,7 +79,7 @@ def score_sample_entry_point(
         for metric_id in scheduled:
 
             # Calculate metric for sample.
-            try: results[metric_id] = METRIC_REGISTRY.get_entry(metric_id).fn(sample)
+            try: results[metric_id] = METRIC_REGISTRY.get_entry(metric_id).cls(sample).value
 
             # Report calculation failures.
             except Exception as e: results[metric_id] = str(e)

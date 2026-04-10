@@ -41,7 +41,7 @@ class MetricRegistry(Registry):
         ## Returns:
             * Any:  Result of metric computation.
         """
-        return self.get_entry(entry_id = metric_id)(sample).value
+        return self.get_entry(entry_id = metric_id).cls(sample).value
     
     def compute_all(self,
         sample:     Tensor,
@@ -57,7 +57,7 @@ class MetricRegistry(Registry):
             * Dict[str, Any]:   Mapping of metric IDs to their computed values.
         """
         return  {
-                    metric_id: self.get_entry(entry_id = metric_id)(sample).value
+                    metric_id: self.get_entry(entry_id = metric_id).cls(sample).value
                     for metric_id in self.list_entries(filter_by = filter_by)
                 }
     
