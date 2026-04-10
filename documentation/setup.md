@@ -29,3 +29,11 @@ pip install -e .
 ```bash
 gradus version
 ```
+
+## 5. Run Tests
+
+```bash
+pytest
+```
+
+**NOTE**: Should any errors arise during testing, please report them [here](https://github.com/theokoles7/gradus/issues).

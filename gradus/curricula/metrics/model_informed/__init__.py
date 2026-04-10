@@ -7,10 +7,6 @@ __all__ =   [
                 # Classes
                 "TimeToConvergence",
                 "TimeToSaturation",
-                
-                # Quick-access functions
-                "time_to_convergence",
-                "time_to_saturation",
             ]
 
 from gradus.curricula.metrics.model_informed.convergence_time   import *
