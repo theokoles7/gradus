@@ -36,6 +36,7 @@ class ResNet18(ResNet):
         """
         # Initialize network.
         super(ResNet18, self).__init__(
+            id =                    "resnet-18",
             block =                 ResNetBlock,
             layers =                [2, 2, 2, 2],
             input_shape =           input_shape,

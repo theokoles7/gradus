@@ -5,20 +5,20 @@ VGG (Visual Geometry Group) network protocol.
 
 __all__ = ["VGG"]
 
-from logging            import Logger
-from typing             import List, Tuple, Union
+from typing                     import List, Tuple, Union
 
-from torch              import flatten, Tensor
-from torch.nn           import AdaptiveAvgPool2d, BatchNorm2d, Conv2d, Dropout, Linear, MaxPool2d, \
-                               Module, ReLU, Sequential
-from torch.nn.init      import constant_, kaiming_normal_, normal_
+from torch                      import flatten, Tensor
+from torch.nn                   import AdaptiveAvgPool2d, BatchNorm2d, Conv2d, Dropout, Linear, \
+                                       MaxPool2d, Module, ReLU, Sequential
+from torch.nn.init              import constant_, kaiming_normal_, normal_
 
-from gradus.utilities   import get_logger
+from gradus.networks.protocol   import Network
 
-class VGG(Module):
+class VGG(Network):
     """# VGG Neural Network"""
 
     def __init__(self,
+        id:             str,
         layer_config:   List[Union[int, str]],
         input_shape:    Tuple[int, ...],
         num_classes:    int,
@@ -27,16 +27,14 @@ class VGG(Module):
         """# Instantiate VGG Neural Network.
 
         ## Args:
+            * id            (str):              Network identifier.
             * config        (List[int | str]):  VGG layer configuration.
             * input_shape   (Tuple[int]):       Shape of input samples.
             * num_classes   (int):              Number of classes (output logits).
             * batch_norm    (bool):             Use batch normalization. Defaults to True.
         """
         # Initialize module.
-        super(VGG, self).__init__()
-
-        # Initialize logger.
-        self.__logger__:    Logger =            get_logger("vgg")
+        super(VGG, self).__init__(network_id = id)
 
         # If input size is 64 or less, we'll use smaller convolution on first layer.
         self._small_stem_:  bool =              input_shape[1] <= 64

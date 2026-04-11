@@ -43,6 +43,7 @@ class VGG16(VGG):
 
         # Initialize network.
         super(VGG16, self).__init__(
+            id =            "vgg-16",
             layer_config =  layer_config,
             input_shape =   input_shape,
             num_classes =   num_classes,

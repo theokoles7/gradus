@@ -5,7 +5,6 @@ ResNet (Residual Neural Network) protocol.
 
 __all__ = ["ResNet"]
 
-from logging                        import Logger
 from typing                         import List, Optional, Tuple
 
 from torch                          import flatten, Tensor
@@ -13,13 +12,14 @@ from torch.nn                       import AdaptiveAvgPool2d, BatchNorm2d, Conv2
                                            MaxPool2d, Module, ReLU, Sequential
 from torch.nn.init                  import constant_, kaiming_normal_
 
+from gradus.networks.protocol       import Network
 from gradus.networks.resnet.blocks  import BlockType, ResNetBlock, ResNetBottleneck
-from gradus.utilities               import get_logger
 
-class ResNet(Module):
+class ResNet(Network):
     """# Residual Neural Network"""
 
     def __init__(self,
+        id:                 str,
         block:              BlockType,
         layers:             List[int],
         input_shape:        Tuple[int, ...],
@@ -29,6 +29,7 @@ class ResNet(Module):
         """# Instantiate Residual Neural Network.
 
         ## Args:
+            * id                    (str):          Network identifier.
             * block                 (BlockType):    Type of block to use within network's residual 
                                                     layers.
             * layers                (List[int]):    Number of residual layers.
@@ -38,10 +39,7 @@ class ResNet(Module):
                                                     Defaults to False.
         """
         # Initialize module.
-        super(ResNet, self).__init__()
-
-        # Initialize logger.
-        self.__logger__:        Logger =            get_logger("resnet")
+        super(ResNet, self).__init__(network_id = id)
 
         # Define properties.
         self._in_planes_:       int =               64
