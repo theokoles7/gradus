@@ -6,7 +6,7 @@ Curriculum protocol implementation.
 __all__ = ["Curriculum"]
 
 from logging                import Logger
-from typing                 import Generator, List, override, Union
+from typing                 import Any, Dict, Generator, List, override, Union
 
 from torch.utils.data       import BatchSampler
 
@@ -73,6 +73,17 @@ class Curriculum(BatchSampler):
                                     f"Invalid scope specified: {scope}"
                                     "Valid scopes are: batch-wise, holistic"
                                 )
+            
+    # PROPERTIES ===================================================================================
+
+    @property
+    def dict(self) -> Dict[str, Any]:
+        """# Curriculum Dictionary Representation"""
+        return  {
+            "rank":     self._rank_,
+            "metric":   self._metric_,
+            "scope":    self._scope_        
+        }
 
     # HELPERS ======================================================================================
 
