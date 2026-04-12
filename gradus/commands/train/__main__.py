@@ -5,6 +5,7 @@ Main process entry point for train command.
 
 __all__ = ["train_entry_point"]
 
+from pathlib                            import Path
 from typing                             import Any, Dict, Literal, Union
 
 from torch                              import device as t_device
@@ -20,9 +21,10 @@ def train_entry_point(
     network_id:     str,
     dataset_id:     str,
     epochs:         int =                                               100,
-    output_path:    str =                                               "results",
     seed:           int =                                               1,
     device:         Union[Literal["auto", "cpu", "cuda"], t_device] =   "auto",
+    output_path:    str =                                               "results",
+    cache_path:     Union[str, Path] =                                  ".cache",
     *args,
     **kwargs
 ) -> Dict[str, Any]:
@@ -34,11 +36,13 @@ def train_entry_point(
                                         trained.
         * epochs        (int):          Number of training/validation epochs to administer. Defaults 
                                         to 100.
-        * output_path   (str):          Path at which training results will be written. Defaults to 
-                                        "results".
         * seed          (int):          Random seed for reproducibility. Defaults to 1.
         * device        (str | device): Hardware device upon which data will be processed. Defaults 
                                         to "auto".
+        * output_path   (str):          Path at which training results will be written. Defaults to 
+                                        "./results/".
+        * cache_path    (str | Path):   Path at which training artifacts will be cached. Defaults to 
+                                        "./.cache/".
 
     ## Returns:
         * Dict[str, Any]:   Training results.
@@ -46,8 +50,7 @@ def train_entry_point(
     from logging                    import Logger
     from pathlib                    import Path
 
-    from torch                      import no_grad, save, Tensor
-    from torch.nn                   import Module
+    from torch                      import no_grad, Tensor
     from torch.nn.functional        import cross_entropy
     from torch.optim                import SGD
     from torch.optim.lr_scheduler   import CosineAnnealingLR
@@ -55,6 +58,7 @@ def train_entry_point(
 
     from gradus.artifacts           import TrainingRecord
     from gradus.datasets            import Dataset
+    from gradus.networks            import Network
     from gradus.registration        import DATASET_REGISTRY, NETWORK_REGISTRY
     from gradus.utilities           import determine_device, get_logger, set_seed
 
@@ -77,7 +81,7 @@ def train_entry_point(
                                         )
 
     # Load neural network.
-    network:        Module =            NETWORK_REGISTRY.load_network(
+    network:        Network =           NETWORK_REGISTRY.load_network(
                                             network_id =    network_id,
                                             input_shape =   dataset.input_shape,
                                             num_classes =   dataset.num_classes,
@@ -100,8 +104,20 @@ def train_entry_point(
     
     # Initialize training data map.
     train_record:   TrainingRecord =    TrainingRecord(
-                                            output_path =   f"{output_path}/{network_id}_{dataset_id}"
+                                            network_config =    network.dict,
+                                            dataset_config =    dataset.dict,
+                                            epochs =            epochs,
+                                            device =            device,
+                                            seed =              seed,
+                                            output_path =       output_path,
+                                            cache_path =        cache_path
                                         )
+    
+    # If training record already exists...
+    if train_record.already_exists:
+
+        # No need to do it again.
+        logger.info(f"Training already recorded (hash = {train_record.hash})"); return
 
     # Log action.
     logger.info(f"Train process initiated (network = {network_id}; dataset = {dataset_id})")
@@ -193,32 +209,11 @@ def train_entry_point(
         # Anneal learning rate schedule.
         scheduler.step()
 
-    # Save results to master record.
-    train_record.save_to_master(
-        network_id =    network_id,
-        dataset_id =    dataset_id,
-        seed =          seed,
-        device =        device,
-        epochs =        epochs,
-        metric =        kwargs.get("metric"),
-        sampler =       kwargs.get("sampler"),
-        order =         kwargs.get("order"),
-        accuracy =      val_accuracy,
-        loss =          val_loss
-    )
-
-    # Define weights path.
-    weights_path:   Path =  Path(
-        f".cache/weights/"
-        f"{network_id}/{dataset_id}/"
-        f"weights_seed-{seed}_{epochs}-epochs.pth"
-    )
-
-    # Ensure weights path exists.
-    weights_path.parent.mkdir(parents = True, exist_ok = True)
-
     # Save model weights.
-    save(network.state_dict(), weights_path)
+    network.save_weights(path = train_record.weights_path)
+
+    # Save training record.
+    train_record.save()
 
     # Communicate weights location.
-    logger.info(f"Weights saved to {weights_path}")
+    logger.info(f"Weights saved to {train_record.weights_path}")

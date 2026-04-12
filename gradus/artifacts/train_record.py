@@ -5,9 +5,14 @@ Training results map structure & utility.
 
 __all__ = ["TrainingRecord"]
 
+from functools          import cached_property
+from hashlib            import md5
+from json               import dumps
 from logging            import Logger
 from pathlib            import Path
 from typing             import Any, Dict, List, Union
+
+from torch              import device as t_device
 
 from gradus.utilities   import get_logger
 
@@ -15,28 +20,76 @@ class TrainingRecord():
     """# Training Data Record Keeping"""
 
     def __init__(self,
-        output_path:    Union[str, Path] =  "results"
+        network_config: Dict[str, Any],
+        dataset_config: Dict[str, Any],
+        epochs:         int,
+        device:         t_device,
+        seed:           int,
+        output_path:    Union[str, Path] =  "results",
+        cache_path:     Union[str, Path] =  ".cache"
     ):
         """# Instantiate Training Record.
 
         ## Args:
-            * output_path   (str | Path):   Path at which training results will be written. 
-                                            Defaults to "results".
+            * network_config    (Dict[str, Any]):   Network configuration map.
+            * dataset_config    (Dict[str, Any]):   Dataset configuration map.
+            * device            (str):              Device used for run.
+            * seed              (int):              Random seed used for run.
+            * epochs            (int):              Number of epochs trained.
+            * output_path       (str | Path):       Path at which training results will be written. 
+                                                    Defaults to "./results/".
+            * cache_path        (str | Path):       Path at which training artifacts will be cached. 
+                                                    Defaults to "./.cache/".
         """
         # Initialize logger.
-        self.__logger__:    Logger =            get_logger("train-record")
+        self.__logger__:        Logger =            get_logger("train-record")
 
         # Define properties.
-        self._output_path_: Path =              Path(output_path)
-        self._epochs_:      Dict[int, Dict] =   {}
+        self._network_config_:  Dict[str, Any] =    network_config
+        self._dataset_config_:  Dict[str, Any] =    dataset_config
+        self._num_epochs_:      int =               epochs
+        self._device_:          t_device =          device
+        self._seed_:            int =               seed
+        self._epochs_:          Dict[int, Dict] =   {}
 
-        # Ensure output path exists.
-        self._output_path_.mkdir(parents = True, exist_ok = True)
+        # Resolve paths.
+        self._output_path_:     Path =              Path(output_path);  self._output_path_.mkdir(
+                                                                            parents = True,
+                                                                            exist_ok = True
+                                                                        )
+        self._cache_path_:      Path =              Path(cache_path);   self._cache_path_.mkdir(
+                                                                            parents =   True,
+                                                                            exist_ok =  True
+                                                                        )
+        
 
         # Debug initialization.
         self.__logger__.debug(f"Initialized {self}")
 
     # PROPERTIES ===================================================================================
+
+    @property
+    def already_exists(self) -> bool:
+        """# Training Process is Already Cached?"""
+        # If master record does not exist, no trainings have been conducted.
+        if not self.master_record_path.exists(): return False
+
+        # Otherwise, import dictionary reader.
+        from csv    import DictReader
+
+        # Open master record for reading.
+        with open(self.master_record_path, "r") as master_record:
+
+            # Indicate if training process has already been recorded.
+            return  any(
+                        row.get("hash") == self.hash
+                        for row in DictReader(master_record)
+                    )
+        
+    @property
+    def best_accuracy(self) -> float:
+        """# Validation Accuracy at Best Epoch"""
+        return self._epochs_[self.best_epoch]["validation"]["accuracy"]
 
     @property
     def best_epoch(self) -> int:
@@ -45,11 +98,73 @@ class TrainingRecord():
                     self._epochs_,
                     key =   lambda epoch: self._epochs_[epoch]["validation"]["accuracy"]
                 )
+    
+    @property
+    def best_loss(self) -> float:
+        """# Validation Loss at Best Epoch"""
+        return self._epochs_[self.best_epoch]["validation"]["loss"]
+    
+    @property
+    def config(self) -> Dict[str, Any]:
+        """# Training Process Configuration Metadata"""
+        return  {
+                    "network":      self._network_config_,
+                    "dataset":      self._dataset_config_,
+                    "seed":         self._seed_,
+                    "device":       str(self._device_),
+                    "num_epochs":   self._num_epochs_,
+                }
+    
+    @property
+    def final_accuracy(self) -> float:
+        """# Validation Accuracy at Last Recorded Epoch"""
+        return self.validation_accuracies[-1]
+    
+    @property
+    def final_loss(self) -> float:
+        """# Validation Loss at Last Recorded Epoch"""
+        return self.validation_losses[-1]
+    
+    @cached_property
+    def hash(self) -> str:
+        """# Unique Hash of Training Variables"""
+        return  md5(dumps({
+                    "network":  self._network_config_,
+                    "dataset":  self._dataset_config_,
+                    "epochs":   self._num_epochs_,
+                    "device":   str(self._device_),
+                    "seed":     self._seed_
+                }, sort_keys = True).encode()).hexdigest()
+    
+    @property
+    def master_record_path(self) -> Path:
+        """# Master Record File Path"""
+        return self._output_path_ / "master_record.csv"
 
     @property
     def num_epochs(self) -> int:
         """# Quantity of Epochs Recorded"""
         return len(self._epochs_)
+    
+    @property
+    def record_path(self) -> Path:
+        """# Path at Which Training Record is Located"""
+        return  (
+                    self._output_path_                                                  /
+                    f"""{self._network_config_["id"]}_{self._dataset_config_["id"]}"""  /
+                    f"{self.hash}.json"
+                )
+    
+    @property
+    def results(self) -> Dict[str, Any]:
+        """# Current Training Results"""
+        return  {
+            "final_accuracy":   self.final_accuracy,
+            "final_loss":       self.final_loss,
+            "best_accuracy":    self.best_accuracy,
+            "best_loss":        self.best_loss,
+            "best_epoch":       self.best_epoch
+        }
 
     @property
     def train_accuracies(self) -> List[float]:
@@ -70,6 +185,11 @@ class TrainingRecord():
     def validation_losses(self) -> List[float]:
         """# Validation Loss Sequence"""
         return [e["validation"]["loss"] for e in self._epochs_.values()]
+    
+    @property
+    def weights_path(self) -> Path:
+        """# Path at Which Network Weights Will be Stored"""
+        return self._cache_path_ / "weights" / f"{self.hash}.pth"
 
     # METHODS ======================================================================================
 
@@ -101,93 +221,13 @@ class TrainingRecord():
         # Debug record.
         self.__logger__.debug(f"Recorded Epoch {epoch}: {self._epochs_[epoch]}")
 
-    def save_to_master(self,
-        network_id: str,
-        dataset_id: str,
-        device:     str,
-        seed:       int,
-        epochs:     int,
-        accuracy:   float,
-        loss:       float,
-        metric:     str =   None,
-        sampler:    str =   None,
-        order:      str =   None
-    ) -> None:
-        """# Save to Master Record.
+    def save(self) -> None:
+        """# Save Training Record."""
+        # Save to master record.
+        self._save_to_master_record_()
 
-        ## Args:
-            * network_id    (str):      Network identifier.
-            * dataset_id    (str):      Dataset identifier.
-            * device        (str):      Device used for run.
-            * seed          (int):      Random seed used for run.
-            * epochs        (int):      Number of epochs trained.
-            * accuracy      (float):    Final validation accuracy.
-            * loss          (float):    Final validation loss.
-            * metric        (str):      Curriculum metric ID, if any.
-            * sampler       (str):      Curriculum sampler ID, if any.
-            * order         (str):      Curriculum ordering ID, if any.
-        """
-        from csv    import DictWriter
-        from json   import dump
-        
-        # Define CSV fields.
-        FIELDS:         List[str] = [
-                                        "network_id", "dataset_id", "device", "seed", "epochs",
-                                        "accuracy", "loss", "metric", "sampler", "order",
-                                        "record_file"
-                                    ]
-        
-        # Resolve results CSV path.
-        results_path:   Path =      Path("results/master_record.csv")
-        record_path:    Path =      self._output_path_ / f"training-record_seed-{seed}_{epochs}-epochs.json"
-
-        # Ensure path exists.
-        results_path.parent.mkdir(parents = True, exist_ok = True)
-
-        # If file does not exist or is empty...
-        if not results_path.exists() or results_path.stat().st_size == 0:
-
-            # Open file for writing.
-            with open(results_path, "w", newline = "") as f:
-
-                # Write header.
-                DictWriter(f, fieldnames = FIELDS).writeheader()
-
-        # Prepare metadata.
-        metadata:   Dict[str, Any] =    {
-                                            "network_id":   network_id,
-                                            "dataset_id":   dataset_id,
-                                            "seed":         seed,
-                                            "device":       str(device),
-                                            "epochs":       epochs,
-                                            "metric":       metric,
-                                            "sampler":      sampler,
-                                            "order":        order,
-                                            "accuracy":     accuracy,
-                                            "loss":         loss,
-                                            "record_file":  str(record_path)
-                                        }
-
-        # Open file for writing.
-        with open(results_path, "a", newline = "") as f:
-
-            # Write record.
-            DictWriter(f, fieldnames = FIELDS).writerow(metadata)
-
-        # Communicate master record.
-        self.__logger__.info(f"Result saved to master record at {results_path.absolute}")
-
-        # Open verbose record for writing...
-        with open(record_path, "w") as file_out:
-
-            # Prepare record with metadata.
-            metadata.update(self.to_dict())
-
-            # Save verbose training record.
-            dump(metadata, file_out, indent = 2, default = str)
-
-        # Communicate verbose record path.
-        self.__logger__.info(f"""Verbose record saved to {record_path}""")
+        # Save verbose record.
+        self._save_verbose_record_()
 
     def to_dict(self) -> Dict[str, Any]:
         """# Dictionary Representation of Training Record.
@@ -200,14 +240,89 @@ class TrainingRecord():
 
         # Provide mapping of training data/results.
         return  {
-                    "epochs":               self._epochs_,
                     "best_epoch":           self.best_epoch,
                     "best_val_accuracy":    self._epochs_[self.best_epoch]["validation"]["accuracy"],
                     "final_train_accuracy": self.train_accuracies[-1],
                     "final_train_loss":     self.train_losses[-1],
                     "final_val_accuracy":   self.validation_accuracies[-1],
-                    "final_val_loss":       self.validation_losses[-1]
+                    "final_val_loss":       self.validation_losses[-1],
+                    "epochs":               self._epochs_,
                 }
+    
+    # HELPERS ======================================================================================
+
+    def _save_to_master_record_(self) -> None:
+        """# Save Training Results to Master Record."""
+        from csv    import DictWriter
+
+        # Define CSV fields.
+        FIELDS: List[str] = [
+                                "network_id", "dataset_id", "epochs", "seed", "device",
+                                "final_accuracy", "final_loss", "best_accuracy", "best_loss",
+                                "best_epoch", "shuffled", "normalize_classes", "rank", "metric",
+                                "scope", "record_file", "hash"
+                            ]
+        
+        # If master record does not exist, or is empty...
+        if not self.master_record_path.exists() or self.master_record_path.stat().st_size == 0:
+    
+            # Open file for writing.
+            with open(self.master_record_path, "w", newline = "") as master_record:
+
+                # Write header.
+                DictWriter(master_record, fieldnames = FIELDS).writeheader()
+    
+        # Open file for writing.
+        with open(self.master_record_path, "a", newline = "") as master_record:
+
+            # Reconcile curriculum, in case it is None.
+            curriculum: Dict[str, Any] =    self._dataset_config_.get("curriculum") or {}
+
+            # Write results to master record.
+            DictWriter(master_record, fieldnames = FIELDS).writerow({
+                "network_id":           self._network_config_["id"],
+                "dataset_id":           self._dataset_config_["id"],
+                "epochs":               self._num_epochs_,
+                "seed":                 self._seed_,
+                "device":               self._device_,
+                "final_accuracy":       self.final_accuracy,
+                "final_loss":           self.final_loss,
+                "best_accuracy":        self.best_accuracy,
+                "best_loss":            self.best_loss,
+                "best_epoch":           self.best_epoch,
+                "shuffled":             self._dataset_config_["shuffled"],
+                "normalize_classes":    self._dataset_config_["normalize_classes"],
+                "rank":                 curriculum.get("rank"),
+                "metric":               curriculum.get("metric"),
+                "scope":                curriculum.get("scope"),
+                "record_file":          self.record_path,
+                "hash":                 self.hash
+            })
+
+        # Communicate master record.
+        self.__logger__.info(
+            f"Result saved to master record at {self.master_record_path.absolute()}"
+        )
+
+    def _save_verbose_record_(self) -> None:
+        """# Save Verbose Training Record."""
+        from json   import dump
+
+        # Ensure path to verbose record exists.
+        self.record_path.parent.mkdir(parents = True, exist_ok = True)
+
+        # Open verbose record for writing.
+        with open(self.record_path, "w") as training_record:
+
+            # Save verbose training record.
+            dump({
+                "config":   self.config,
+                "results":  self.results,
+                "epochs":   self._epochs_
+            }, training_record, indent = 2, default = str)
+
+        # Communicate verbose record path.
+        self.__logger__.info(f"""Verbose record saved to {self.record_path.absolute()}""")
         
     # DUNDERS ======================================================================================
 
