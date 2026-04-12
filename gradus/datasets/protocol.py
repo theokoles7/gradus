@@ -8,10 +8,12 @@ __all__ = ["Dataset"]
 from abc                import ABC
 from functools          import cached_property
 from logging            import Logger
-from typing             import List, Optional, Tuple, Union
+from typing             import Any, Dict, List, Optional, Tuple, Union
 
 from torch.utils.data   import DataLoader, Dataset as t_Dataset
 
+from gradus.artifacts   import DatasetMetrics
+from gradus.curricula   import Curriculum
 from gradus.utilities   import get_logger, get_system_core_count
 
 class Dataset(ABC):
@@ -63,13 +65,11 @@ class Dataset(ABC):
         self._shuffle_:             bool =          shuffle
         self._normalize_classes_:   bool =          normalize_classes
         self._seed_:                int =           seed
-
-        # Define curriculum.
         self._metric_:              Optional[str] = metric
         self._rank_:                str =           rank
         self._scope_:               str =           scope
 
-        # Debug initialization.
+        # Debug initialization. TODO: Figure out how to use cacheed properties in __repr__
         self.__logger__.debug(f"Initialized {self}")
 
     # PROPERTIES ===================================================================================
@@ -85,9 +85,43 @@ class Dataset(ABC):
         return self._train_data_.classes
     
     @cached_property
+    def curriculum(self) -> Optional[Curriculum]:
+        """# Dataset Curriculum"""
+        return  None if self._metric_ is None else Curriculum(
+                    dataset_id =    self._id_,
+                    scores =        DatasetMetrics(
+                                        dataset_id =    self._id_,
+                                        num_samples =   len(self._train_data_),
+                                        seed =          self._seed_,
+                                        scores_path =   ".cache/scores"
+                                    ),
+                    metric =        self._metric_,
+                    rank =          self._rank_,
+                    scope =         self._scope_,
+                    batch_size =    self._batch_size_,
+                    seed =          self._seed_ 
+                )
+    
+    @property
+    def dict(self) -> Dict[str, Any]:
+        """# Dataset Dictionary Representation"""
+        return  {
+                    "id":                   self._id_,
+                    "shuffled":             self._shuffle_,
+                    "normalize_classes":    self._normalize_classes_,
+                    "curriculum":           None if self.curriculum is None \
+                                            else self.curriculum.dict
+                }
+    
+    @cached_property
     def height(self) -> int:
         """# Input Height"""
         return self.input_shape[1]
+    
+    @property
+    def id(self) -> str:
+        """# Dataset Identifier"""
+        return self._id_
 
     @cached_property
     def input_shape(self) -> Tuple[int, int, int]:
@@ -98,6 +132,11 @@ class Dataset(ABC):
     def num_classes(self) -> int:
         """# Number of Classes"""
         return len(self.classes)
+    
+    @property
+    def shuffled(self) -> bool:
+        """# Training Data is Shuffled?"""
+        return self._shuffle_
     
     @cached_property
     def size(self) -> int:
@@ -142,33 +181,13 @@ class Dataset(ABC):
                         drop_last =     False
                     )
         
-        # Otherwise, load curriculum imports.
-        from gradus.artifacts   import DatasetMetrics
-        from gradus.curricula   import Curriculum
-
-        # Initialize dataset metric scores.
-        scores: DatasetMetrics =    DatasetMetrics(
-                                        dataset_id =    self._id_,
-                                        num_samples =   len(self._train_data_),
-                                        seed =          self._seed_,
-                                        scores_path =   ".cache/scores"
-                                    )
-        
-        # Initialize data loader with curriculum.
+        # Otherwise, initialize data loader with curriculum.
         return  DataLoader(
-            dataset =       self._train_data_,
-            batch_sampler = Curriculum(
-                                dataset_id =    self._id_,
-                                scores =        scores,
-                                metric =        self._metric_,
-                                rank =          self._rank_,
-                                scope =         self._scope_,
-                                batch_size =    self._batch_size_,
-                                seed =          self._seed_ 
-                            ),
-            num_workers =   self._max_workers_,
-            pin_memory =    True
-        )
+                    dataset =       self._train_data_,
+                    batch_sampler = self.curriculum,
+                    num_workers =   self._max_workers_,
+                    pin_memory =    True
+                )
     
     @cached_property
     def width(self) -> int:
