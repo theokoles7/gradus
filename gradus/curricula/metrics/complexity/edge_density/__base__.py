@@ -38,9 +38,9 @@ class EdgeDensity():
             * high      (int):      Canny high threshold. Defaults to 200.
         """
         # Define properties.
-        self._sample_:          Tensor =    sample
-        self._low_:             int =       low
-        self._high_:            int =       high
+        self._sample_:  Tensor =    sample
+        self._low_:     int =       low
+        self._high_:    int =       high
 
     # PROPERTIES ===================================================================================
 
