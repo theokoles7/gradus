@@ -40,6 +40,11 @@ class Network(Module, ABC):
     # PROPERTIES ===================================================================================
 
     @property
+    def dict(self) -> Dict[str, Any]:
+        """# Network Dictionary Representation"""
+        return  {"id":  self._id_}
+
+    @property
     def id(self) -> str:
         """# Network Identifier"""
         return self._id_
@@ -89,14 +94,6 @@ class Network(Module, ABC):
 
         # Provide path at which weights were saved.
         return weights_file
-
-    def to_dict(self) -> Dict[str, Any]:
-        """# Network Dictionary Representation
-
-        ## Returns:
-            * Dict[str, Any]:   Network configuration.
-        """
-        return  {"id":  self._id_}
     
     # DUNDERS ======================================================================================
 
