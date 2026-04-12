@@ -23,6 +23,7 @@ __all__ =   [
                 "ResNetBottleneck",
 
                 # VGG
+                "VGG11",
                 "VGG16",
                 "VGG19",
             ]
