@@ -40,6 +40,7 @@ class ImageNet(Dataset):
     """
 
     def __init__(self,
+        epochs:             int,
         root:               str =                               ".cache/data",
         batch_size:         int =                               128,
         shuffle:            bool =                              False,
@@ -123,6 +124,7 @@ class ImageNet(Dataset):
             rank =              rank,
             scope =             scope,
             schedule =          schedule,
+            epochs =            epochs,
             start_fraction =    start_fraction,
             normalize_classes = normalize_classes,
             seed =              seed
