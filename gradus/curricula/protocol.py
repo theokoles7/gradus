@@ -8,7 +8,7 @@ __all__ = ["Curriculum"]
 from logging                import Logger
 from typing                 import Any, Dict, Generator, List, override, Union
 
-from torch.utils.data       import BatchSampler
+from torch.utils.data       import BatchSampler, SequentialSampler
 
 from gradus.artifacts       import DatasetMetrics
 from gradus.registration    import RANK_REGISTRY
@@ -44,7 +44,7 @@ class Curriculum(BatchSampler):
 
         # Initialize batch sampler.
         super(Curriculum, self).__init__(
-            sampler =       range(len(scores.scores)),
+            sampler =       SequentialSampler(scores.scores),
             batch_size =    batch_size,
             drop_last =     False
         )
