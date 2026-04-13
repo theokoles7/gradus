@@ -20,19 +20,9 @@ __all__ =   [
                 "WaveletEnergy",
                 "WaveletEntropy",
 
-                "color_variance",
-                "compression_ratio",
-                "edge_density",
-                "spatial_frequency",
-                "wavelet_energy",
-                "wavelet_entropy",
-
                 # Model-informed
                 "TimeToConvergence",
                 "TimeToSaturation",
-                
-                "time_to_convergence",
-                "time_to_saturation",
 
                 # RANKS ============================================================================
 
@@ -45,8 +35,17 @@ __all__ =   [
                 "DistanceFromMean",
                 "Lexicographic",
                 "Weighted",
+
+                # SCHEDULES ========================================================================
+
+                # Protocol
+                "Schedule",
+
+                # Concrete
+                "LinearSchedule",
             ]
 
 from gradus.curricula.protocol  import Curriculum
 from gradus.curricula.metrics   import *
 from gradus.curricula.ranks     import *
+from gradus.curricula.schedules import *
