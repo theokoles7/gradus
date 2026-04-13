@@ -9,6 +9,7 @@ __all__ =   [
                 "MetricRegistry",
                 "NetworkRegistry",
                 "RankRegistry",
+                "ScheduleRegistry",
             ]
 
 from gradus.registration.registries.command_registry    import CommandRegistry
@@ -16,3 +17,4 @@ from gradus.registration.registries.dataset_registry    import DatasetRegistry
 from gradus.registration.registries.metric_registry     import MetricRegistry
 from gradus.registration.registries.network_registry    import NetworkRegistry
 from gradus.registration.registries.rank_registry       import RankRegistry
+from gradus.registration.registries.schedule_registry   import ScheduleRegistry

@@ -9,6 +9,7 @@ __all__ =   [
                 "register_metric",
                 "register_network",
                 "register_rank",
+                "register_schedule",
             ]
 
 from typing                     import Callable, List, Type
@@ -214,6 +215,45 @@ def register_rank(
         )
 
         # Expose ranking class.
+        return cls
+    
+    # Expose decorator.
+    return decorator
+
+
+def register_schedule(
+    id:     str,
+    tags:   List[str]
+) -> Callable:
+    """# Register Curriculum Schedule.
+
+    ## Args:
+        * id    (str):          Schedule identifier.
+        * tags  (List[str]):    Taxonomical schedule keywords.
+
+    ## Returns:
+        * Callable: Registration decorator.
+    """
+    # Define decorator.
+    def decorator(
+        cls:    Type
+    ) -> Type:
+        """# Curriculum Schedule Registration Decorator.
+
+        ## Args:
+            * cls   (Type): Schedule class.
+        """
+        # Load curriculum registry.
+        from gradus.registration    import SCHEDULE_REGISTRY
+
+        # Register curriculum schedule.
+        SCHEDULE_REGISTRY.register(
+            entry_id =  id,
+            cls =       cls,
+            tags =      tags
+        )
+
+        # Expose schedule class.
         return cls
     
     # Expose decorator.
