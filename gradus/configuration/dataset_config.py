@@ -122,7 +122,7 @@ class DatasetConfig(Config):
 
         curriculum.add_argument(
             "--schedule",
-            dest =      "schedule_id",
+            dest =      "schedule",
             type =      str,
             choices =   SCHEDULE_REGISTRY.list_entries(),
             default =   None,
