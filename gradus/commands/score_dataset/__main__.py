@@ -54,7 +54,13 @@ def score_dataset_entry_point(
     logger:         Logger =            get_logger("dataset-scoring")
 
     # Load dataset.
-    dataset:        Dataset =           DATASET_REGISTRY.load_dataset(dataset_id, **kwargs)
+    dataset:        Dataset =           DATASET_REGISTRY.load_dataset(dataset_id, **{
+                                            k: v for k, v in kwargs.items()
+                                            if k not in {
+                                                "metric", "rank", "scope",
+                                                "normalize_classes", "shuffle"
+                                            }
+                                        })
 
     # Load dataset metrics.
     scores:         DatasetMetrics =    DatasetMetrics(
