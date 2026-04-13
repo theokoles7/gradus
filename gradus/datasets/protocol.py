@@ -253,5 +253,5 @@ class Dataset(ABC):
         """# Dataset Object Representation"""
         return  (
                     f"""<{self._id_.upper()}Dataset({self.num_classes} classes, """
-                    f"""{self.size} samples)>"""
+                    f"""{self.size} samples, batch-size = {self._batch_size_})>"""
                 )
