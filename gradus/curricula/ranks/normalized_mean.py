@@ -46,8 +46,17 @@ class NormalizedMean(Rank):
             * cache_dir     (str | Path):               Directory under which keyed indices will be 
                                                         cached. Defaults to "./.cache/ranks/".
         """
-        # Resolve metric columns.
-        if metric is None:              self._cols_:    List[str] = []
+        # If no metric specification is provided...
+        if metric is None:
+            
+            # Default to all metrics.
+            self._cols_:    List[str] = [
+                                            col for col in scores.columns
+                                            if col != "index"
+                                            and scores[col].dtype in ("float64", "int64")
+                                        ]
+            
+        # Otherwise, ensure that metrics are a list.
         elif isinstance(metric, str):   self._cols_:    List[str] = [metric]
         else:                           self._cols_:    List[str] = list(metric)
 
@@ -71,18 +80,14 @@ class NormalizedMean(Rank):
         """
         from pandas import DataFrame, Series
 
-        # Resolve columns — all numeric columns excluding index if not specified.
-        cols:           List[str] = self._cols_ or [
-                                        col for col in self._scores_.columns
-                                        if col != "index"
-                                        and self._scores_[col].dtype in ("float64", "int64")
-                                    ]
+        # Take note of inverted metrics.
+        INVERTED:   List[str] = METRIC_REGISTRY.list_entries(filter_by = ["inverted"])
 
         # Extract and copy relevant columns.
-        normalized:     DataFrame = self._scores_[cols].copy().astype(float)
+        normalized:     DataFrame = self._scores_[self._cols_].copy().astype(float)
 
         # Min-max normalize each column.
-        for col in cols:
+        for col in self._cols_:
             col_min:    float =     normalized[col].min()
             col_max:    float =     normalized[col].max()
             col_range:  float =     col_max - col_min
@@ -91,14 +96,11 @@ class NormalizedMean(Rank):
             if col_range < 1e-10:   normalized[col] = 0.0
             else:                   normalized[col] = (normalized[col] - col_min) / col_range
 
-        # Invert metrics tagged as inverted so higher = more complex across all columns.
-        invert_cols:    List[str] = METRIC_REGISTRY.list_entries(filter_by = ["inverted"])
-
         # For any inverted metrics...
-        for col in invert_cols:
+        for col in INVERTED:
 
             # Invert the values, such that higher = more complex.
-            if col in cols:         normalized[col] = 1.0 - normalized[col]
+            if col in self._cols_:         normalized[col] = 1.0 - normalized[col]
 
         # Compute equal-weighted mean across all columns as the composite score.
         composite:      Series =    normalized.mean(axis = 1)

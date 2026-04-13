@@ -39,8 +39,17 @@ class PairwiseCorrelation(Rank):
                                                 Defaults to "./.cache/ranks/".
             * seed          (int):              Random number generation seed. Defaults to 1.
         """
-        # Resolve metric columns — default to all numeric columns.
-        if metric is None:              self._cols_:    List[str] = []
+        # If no metric specification is provided...
+        if metric is None:
+            
+            # Default to all metrics.
+            self._cols_:    List[str] = [
+                                            col for col in scores.columns
+                                            if col != "index"
+                                            and scores[col].dtype in ("float64", "int64")
+                                        ]
+            
+        # Otherwise, ensure that metrics are a list.
         elif isinstance(metric, str):   self._cols_:    List[str] = [metric]
         else:                           self._cols_:    List[str] = list(metric)
 
@@ -69,15 +78,8 @@ class PairwiseCorrelation(Rank):
         # Take note of inverted metrics.
         INVERTED:   List[str] = METRIC_REGISTRY.list_entries(filter_by = ["inverted"])
 
-        # Resolve columns — all numeric columns excluding index if not specified.
-        cols:       List[str] = self._cols_ or [
-                                    col for col in self._scores_.columns
-                                    if col != "index"
-                                    and self._scores_[col].dtype in ("float64", "int64")
-                                ]
-
         # Extract attribute matrix.
-        attributes: NDArray =    self._scores_[cols].values.astype(float)
+        attributes: NDArray =    self._scores_[self._cols_].values.astype(float)
 
         # Min-max normalize each column.
         col_mins:   NDArray =    attributes.min(axis = 0)
@@ -92,8 +94,8 @@ class PairwiseCorrelation(Rank):
 
         # Invert necessary metrics so higher = more complex.
         for col in INVERTED:
-            if col in cols:
-                normalized[:, cols.index(col)] = 1.0 - normalized[:, cols.index(col)]
+            if col in self._cols_:
+                normalized[:, self._cols_.index(col)] = 1.0 - normalized[:, self._cols_.index(col)]
 
         # Center each row and L2-normalize — enables Pearson via dot product.
         centered:   NDArray =    normalized - normalized.mean(axis = 1, keepdims = True)
