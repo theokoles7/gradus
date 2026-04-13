@@ -1,0 +1,108 @@
+"""# gradus.curricula.ranks.normalized_mean
+
+Normalized mean composite ranking implementation.
+"""
+
+__all__ = ["NormalizedMean"]
+
+from pathlib                            import Path
+from typing                             import List, override, Union
+
+from pandas                             import DataFrame
+
+from gradus.curricula.ranks.protocol    import Rank
+from gradus.registration                import METRIC_REGISTRY, register_rank
+
+@register_rank(
+    id =    "normalized-mean",
+    tags =  ["composite"]
+)
+class NormalizedMean(Rank):
+    """# Normalized Mean Curriculum Ranking
+
+    Ranks samples by the equal-weighted mean of min-max normalized metric
+    columns. Metrics tagged as inverted in the registry are flipped
+    (1 - normalized) so that all columns align on a unified scale where
+    higher = more complex. Samples are sorted ascending — lowest mean
+    complexity score first.
+    """
+
+    def __init__(self,
+        dataset_id: str,
+        scores:     DataFrame,
+        metric:     Union[str, List[str]] = None,
+        seed:       int =                   1,
+        cache_dir:  Union[str, Path] =      ".cache/ranks"
+    ):
+        """# Instantiate Normalized Mean Curriculum Ranking.
+
+        ## Args:
+            * dataset_id    (str):                      Identifier of dataset whose samples are 
+                                                        being ranked.
+            * scores        (DataFrame):                Dataset metric scores.
+            * metric        (str | List[str] | None):   Metric columns to include. Defaults to all
+                                                        numeric columns.
+            * seed          (int):                      Random number generation seed. Defaults to 1.
+            * cache_dir     (str | Path):               Directory under which keyed indices will be 
+                                                        cached. Defaults to "./.cache/ranks/".
+        """
+        # Resolve metric columns.
+        if metric is None:              self._cols_:    List[str] = []
+        elif isinstance(metric, str):   self._cols_:    List[str] = [metric]
+        else:                           self._cols_:    List[str] = list(metric)
+
+        # Initialize protocol.
+        super(NormalizedMean, self).__init__(
+            rank_id =       "normalized-mean",
+            dataset_id =    dataset_id,
+            scores =        scores,
+            seed =          seed,
+            cache_dir =     cache_dir
+        )
+
+    # HELPERS ======================================================================================
+
+    @override
+    def _rank_(self) -> List[int]:
+        """# Sort Indices by Normalized Mean Complexity Score.
+
+        ## Returns:
+            * List[int]:    Ranked indices.
+        """
+        from pandas import DataFrame, Series
+
+        # Resolve columns — all numeric columns excluding index if not specified.
+        cols:           List[str] = self._cols_ or [
+                                        col for col in self._scores_.columns
+                                        if col != "index"
+                                        and self._scores_[col].dtype in ("float64", "int64")
+                                    ]
+
+        # Extract and copy relevant columns.
+        normalized:     DataFrame = self._scores_[cols].copy().astype(float)
+
+        # Min-max normalize each column.
+        for col in cols:
+            col_min:    float =     normalized[col].min()
+            col_max:    float =     normalized[col].max()
+            col_range:  float =     col_max - col_min
+
+            # Avoid division by zero for constant columns.
+            if col_range < 1e-10:   normalized[col] = 0.0
+            else:                   normalized[col] = (normalized[col] - col_min) / col_range
+
+        # Invert metrics tagged as inverted so higher = more complex across all columns.
+        invert_cols:    List[str] = METRIC_REGISTRY.list_entries(filter_by = ["inverted"])
+
+        # For any inverted metrics...
+        for col in invert_cols:
+
+            # Invert the values, such that higher = more complex.
+            if col in cols:         normalized[col] = 1.0 - normalized[col]
+
+        # Compute equal-weighted mean across all columns as the composite score.
+        composite:      Series =    normalized.mean(axis = 1)
+
+        # Sort ascending — lowest composite score = simplest samples first.
+        return  self._scores_.assign(composite = composite) \
+                .sort_values("composite")["index"].tolist()

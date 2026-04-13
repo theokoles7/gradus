@@ -17,7 +17,7 @@ from gradus.registration                                            import regis
 @register_metric(
     id =        "compression-ratio",
     config =    CompressionRatioConfig,
-    tags =      ["complexity"]
+    tags =      ["complexity", "inverted"]
 )
 class CompressionRatio():
     """# Compression Ratio Measurement"""

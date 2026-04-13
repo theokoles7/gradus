@@ -11,6 +11,7 @@ __all__ =   [
                 "ColorVariance",
                 "CompressionRatio",
                 "EdgeDensity",
+                "ObjectCount",
                 "SpatialFrequency",
                 "WaveletEnergy",
                 "WaveletEntropy",

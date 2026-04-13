@@ -1,39 +1,40 @@
-"""# gradus.curricula.metrics.complexity.edge_density
+"""# gradus.curricula.metrics.complexity.object_count.base
 
-Measurement of image's edge density using Canny edge detection.
+Count of objects within an image using Canny edge detection.
 """
 
-__all__ = ["EdgeDensity"]
+__all__ = ["ObjectCount"]
 
 from functools                                                  import cached_property
-from typing                                                     import override
+from typing                                                     import List, override, Union
 
 from numpy.typing                                               import NDArray
-from torch                                                      import Tensor
+from torch                                                      import device as t_device, Tensor
 
-from gradus.curricula.metrics.complexity.edge_density.__args__  import EdgeDensityConfig
+from gradus.curricula.metrics.complexity.object_count.__args__  import ObjectCountConfig
 from gradus.registration                                        import register_metric
+from gradus.utilities                                           import determine_device
 
 @register_metric(
-    id =        "edge-density",
-    config =    EdgeDensityConfig,
+    id =        "object-count",
+    config =    ObjectCountConfig,
     tags =      ["complexity"]
 )
-class EdgeDensity():
-    """# Edge Density Measurement"""
+class ObjectCount():
+    """# Object Count Measurement"""
 
     def __init__(self,
-        # Sample
+        # Sampel
         sample: Tensor, *,
 
         # Calculation parameters
         low:    int =   100,
         high:   int =   200
     ):
-        """# Calculate Sample's Edge Density.
+        """# Calculate Sample's Object Count.
 
         ## Args:
-            * sample    (Tensor):   Sample whose edge density is being measured.
+            * sample    (Tensor):   Sample whose object conut is being measured.
             * low       (int):      Canny low threshold. Defaults to 100.
             * high      (int):      Canny high threshold. Defaults to 200.
         """
@@ -43,18 +44,6 @@ class EdgeDensity():
         self._high_:    int =       high
 
     # PROPERTIES ===================================================================================
-
-    @cached_property
-    def density(self) -> float:
-        """# Sample's Edge Density"""
-        return self.edge_count / self.total_pixels
-
-    @cached_property
-    def edge_count(self) -> int:
-        """# Number of Edges Detected in Image"""
-        from numpy import count_nonzero
-
-        return int(count_nonzero(self.edges))
     
     @cached_property
     def edges(self) -> NDArray:
@@ -62,6 +51,18 @@ class EdgeDensity():
         from cv2 import Canny
 
         return Canny(self.normalized_image, self._low_, self._high_)
+    
+    @cached_property
+    def edges_dilated(self) -> NDArray:
+        """"""
+        from cv2    import dilate
+        from numpy  import ones, uint8
+
+        # Initialize kernel.
+        kernel: NDArray =   ones((3, 3), uint8)
+
+        # Dilate edges.
+        return dilate(src = self.edges, kernel = kernel, iterations = 1)
     
     @cached_property
     def normalized_image(self) -> NDArray:
@@ -91,12 +92,18 @@ class EdgeDensity():
         return image.astype(uint8)
     
     @cached_property
-    def total_pixels(self) -> int:
-        """# Total Number of Pixels in Image"""
-        return self.edges.size
+    def num_labels(self) -> int:
+        """# Number of Objects within Image"""
+        from cv2    import connectedComponents
+
+        # Count objects.
+        labels, _ = connectedComponents(image = self.edges_dilated)
+
+        # Subtract 1 for background.
+        return max(labels - 1, 0)
     
     @override
     @cached_property
-    def value(self) -> float:
-        """# Sample's Edge Density"""
-        return self.density
+    def value(self) -> int:
+        """# Number of Objects within Image"""
+        return self.num_labels

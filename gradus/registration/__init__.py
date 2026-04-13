@@ -10,6 +10,7 @@ __all__ =   [
                 "METRIC_REGISTRY",
                 "NETWORK_REGISTRY",
                 "RANK_REGISTRY",
+                "SCHEDULE_REGISTRY",
 
                 # Decorators
                 "register_command",
@@ -17,6 +18,7 @@ __all__ =   [
                 "register_metric",
                 "register_network",
                 "register_rank",
+                "register_schedule",
             ]
 
 from gradus.registration.decorators import *
@@ -28,3 +30,4 @@ DATASET_REGISTRY:   DatasetRegistry =   DatasetRegistry()
 METRIC_REGISTRY:    MetricRegistry =    MetricRegistry()
 NETWORK_REGISTRY:   NetworkRegistry =   NetworkRegistry()
 RANK_REGISTRY:      RankRegistry =      RankRegistry()
+SCHEDULE_REGISTRY:  ScheduleRegistry =  ScheduleRegistry()
