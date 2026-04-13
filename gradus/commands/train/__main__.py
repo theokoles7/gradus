@@ -6,7 +6,7 @@ Main process entry point for train command.
 __all__ = ["train_entry_point"]
 
 from pathlib                            import Path
-from typing                             import Any, Dict, Literal, Union
+from typing                             import Any, Dict, List, Literal, Union
 
 from torch                              import device as t_device
 
@@ -69,7 +69,7 @@ def train_entry_point(
     set_seed(seed = seed);              logger.info(f"Seed: {seed}")
 
     # Determine device.
-    device:         t_device =           determine_device(
+    device:          t_device =           determine_device(
                                             device = device
                                         ); logger.info(f"Device: {device}")
 
@@ -79,6 +79,12 @@ def train_entry_point(
                                             seed =          seed,
                                             epochs =        epochs,
                                             **kwargs
+                                        )
+    
+    # Determine if this training is using adaptive scheduling.
+    adaptive:       bool =              (
+                                            dataset.schedule is not None and
+                                            dataset.schedule.id == "adaptive"
                                         )
 
     # Load neural network.
@@ -101,7 +107,7 @@ def train_entry_point(
     scheduler:      CosineAnnealingLR = CosineAnnealingLR(
                                             optimizer =     optimizer,
                                             T_max =         epochs
-                                        )
+                                            )
     
     # Initialize training data map.
     train_record:   TrainingRecord =    TrainingRecord(
@@ -123,7 +129,6 @@ def train_entry_point(
     # Log action.
     logger.info(f"Train process initiated (network = {network}; dataset = {dataset}' epochs = {epochs})")
 
-
     # For each epoch prescribed...
     for epoch in range(1, epochs + 1):
 
@@ -138,17 +143,22 @@ def train_entry_point(
             train_total_loss, train_correct, train_total =  0, 0, 0
             val_total_loss,   val_correct,   val_total =    0, 0, 0
 
+            # Initialize per-batch signal accumulators.
+            batch_std_rows:     List[Dict] =                []
+            batch_grad_norm:    List[Dict] =                []
+
             # Place network in training mode.
             network.train(); progress_bar.set_postfix(status = f"Training")
 
             # For each batch in the training dataset...
-            for samples, targets in dataset.train_loader:
+            for b, (samples, targets) in enumerate(dataset.train_loader):
 
                 # Place samples and targets on device.
                 samples, targets =          samples.to(device), targets.to(device)
 
-                # Forward pass.
-                predictions:    Tensor =    network(samples)
+                # If using adaptive scheduling
+                if adaptive:    predictions, activations =  network(samples, return_activations = True)
+                else:           predictions: Tensor =       network(samples)
 
                 # Compute loss.
                 loss:           Tensor =    cross_entropy(input = predictions, target = targets)
@@ -161,6 +171,28 @@ def train_entry_point(
                 _, predictions =            predictions.max(dim = 1)
                 train_correct +=            predictions.eq(targets).sum().item()
                 train_total +=              targets.size(0)
+
+                # If adaptive scheduling is used...
+                if adaptive:
+
+                    # Compute mean activation standard deviation across all layers.
+                    mean_std:       float =         sum(act.std().item() for act in activations)    \
+                                                    / len(activations)
+                    
+                    # Compute gradient L2 norm across all layers wih gradients.
+                    grad_norms:     List[float] =   [
+                                                        p.grad.data.norm(2).item()
+                                                        for p in network.parameters()
+                                                        if p.grad is not None
+                                                    ]
+                    
+                    # Compute mean of L2 norm.
+                    mean_grad_norm: float =         sum(grad_norms) / len(grad_norms) \
+                                                    if grad_norms else 0.0
+                    
+                    # Accumulate records.
+                    batch_std_rows.append( {"batch_idx": b, "mean_std":       mean_std})
+                    batch_grad_norm.append({"batch_idx": b, "mean_grad_norm": mean_grad_norm})
 
                 # Update progress bar.
                 progress_bar.update(1)
@@ -210,11 +242,25 @@ def train_entry_point(
         # Anneal learning rate schedule.
         scheduler.step()
 
-        # Update curriculum schedule.
+        # Build per-batch signal DataFrames for adaptive schedule.
+        if adaptive:
+            from pandas import DataFrame
+
+            std_df:         DataFrame = DataFrame(batch_std_rows).set_index("batch_idx")       \
+                                        if batch_std_rows       else DataFrame()
+            grad_norm_df:   DataFrame = DataFrame(batch_grad_norm).set_index("batch_idx") \
+                                        if batch_grad_norm else DataFrame()
+        else:
+            std_df =        None
+            grad_norm_df =  None
+
+        # Advance curriculum pacing schedule.
         dataset.step(
             epoch =     epoch,
             loss =      train_loss,
-            val_acc =   val_accuracy
+            val_acc =   val_accuracy,
+            std_df =        std_df,
+            grad_norm_df =  grad_norm_df
         )
 
     # Save model weights.

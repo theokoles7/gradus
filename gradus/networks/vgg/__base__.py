@@ -81,7 +81,8 @@ class VGG(Network):
     # METHODS ======================================================================================
 
     def forward(self,
-        X:  Tensor
+        X:                  Tensor,
+        return_activations: bool =  False
     ) -> Tensor:
         """# Forward Pass Through Network.
 
@@ -100,8 +101,24 @@ class VGG(Network):
         # Flatten.
         X_3:    Tensor =    flatten(input = X_2, start_dim = 1)
 
+        # If returning activations...
+        if return_activations:
+
+            # Record activation signals.
+            activations:    List[Tensor] =  [
+                                                X_2.detach(),
+                                                X_3.detach(),
+                                            ]
+
+
         # Classification.
-        return self._classifier_(X_3)
+        output: Tensor =    self._classifier_(X_3)
+
+        # If returning activations, do so.
+        if return_activations: return output, activations
+
+        # Otherwise, just return classification.
+        return output
 
     # HELPERS ======================================================================================
 

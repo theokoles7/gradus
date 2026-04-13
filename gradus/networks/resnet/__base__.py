@@ -110,30 +110,49 @@ class ResNet(Network):
     # METHODS ======================================================================================
 
     def forward(self,
-        X:  Tensor
+        X:                  Tensor,
+        return_activations: bool =  False
     ) -> Tensor:
         """# Forward Pass Through Network.
 
         ## Args:
-            * X (Tensor):   Input tensor.
+            * X                     (Tensor):   Input tensor.
+            * return_activations    (bool):     Return intermediate activations.
 
         ## Returns:
             * Tensor:   Output tensor.
         """
         # Convolutional layer.
-        X_1:    Tensor =    self._relu_(self._bn1_(self._conv1_(X)))
+        X_1:            Tensor =    self._relu_(self._bn1_(self._conv1_(X)))
 
         # If not using small stem, use max pooling.
         if not self._small_stem_: X_1 = self._max_pool_(X_1)
 
         # First block layer.
-        X_2:    Tensor =    self._layer1_(X_1)
-        X_3:    Tensor =    self._layer2_(X_2)
-        X_4:    Tensor =    self._layer3_(X_3)
-        X_5:    Tensor =    self._layer4_(X_4)
+        X_2:            Tensor =    self._layer1_(X_1)
+        X_3:            Tensor =    self._layer2_(X_2)
+        X_4:            Tensor =    self._layer3_(X_3)
+        X_5:            Tensor =    self._layer4_(X_4)
+
+        # If returning activations...
+        if return_activations:
+
+            # Record activation signals.
+            activations:    List[Tensor] =  [
+                                                X_2.detach(),
+                                                X_3.detach(),
+                                                X_4.detach(),
+                                                X_5.detach()
+                                            ]
 
         # Classification layer.
-        return self._fc_(flatten(input = self._avg_pool_(X_5), start_dim = 1))
+        output: Tensor =    self._fc_(flatten(input = self._avg_pool_(X_5), start_dim = 1))
+
+        # If returning activations, do so.
+        if return_activations: return output, activations
+
+        # Otherwise, just return classification.
+        return output
 
     # HELPERS ======================================================================================
 
