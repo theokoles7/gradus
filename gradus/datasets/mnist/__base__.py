@@ -8,7 +8,7 @@ __all__ = ["MNIST"]
 from typing                         import List, Optional, Union
 
 from torchvision.datasets           import MNIST as t_MNIST
-from torchvision.transforms         import Compose, Normalize, RandomCrop, RandomHorizontalFlip, ToTensor
+from torchvision.transforms         import Compose, Normalize, RandomCrop, ToTensor
 
 from gradus.datasets.mnist.__args__ import MNISTConfig
 from gradus.datasets.protocol       import Dataset
@@ -72,9 +72,6 @@ class MNIST(Dataset):
                                     transform = Compose([
                                                     # Randomly crop with padding.
                                                     RandomCrop(size = 32, padding = 4),
-
-                                                    # Randomly flip horizontally.
-                                                    RandomHorizontalFlip(),
 
                                                     # Convert images to tensors.
                                                     ToTensor(),
