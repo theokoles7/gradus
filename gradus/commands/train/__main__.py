@@ -77,6 +77,7 @@ def train_entry_point(
     dataset:        Dataset =           DATASET_REGISTRY.load_dataset(
                                             dataset_id =    dataset_id,
                                             seed =          seed,
+                                            epochs =        epochs,
                                             **kwargs
                                         )
 
@@ -208,6 +209,13 @@ def train_entry_point(
 
         # Anneal learning rate schedule.
         scheduler.step()
+
+        # Update curriculum schedule.
+        dataset.step(
+            epoch =     epoch,
+            loss =      train_loss,
+            val_acc =   val_accuracy
+        )
 
     # Save model weights.
     network.save_weights(path = train_record.weights_path)

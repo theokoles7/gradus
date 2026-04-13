@@ -74,6 +74,9 @@ class Curriculum(BatchSampler):
                                     "Valid scopes are: batch-wise, holistic"
                                 )
             
+        # Initialize active batches.
+        self._active_:      List[List[int]] =   self._batches_
+            
     # PROPERTIES ===================================================================================
 
     @property
@@ -84,6 +87,28 @@ class Curriculum(BatchSampler):
             "metric":   self._metric_,
             "scope":    self._scope_        
         }
+    
+    # METHODS ======================================================================================
+
+    def set_fraction(self,
+        fraction:   float
+    ) -> None:
+        """# Set Active Fraction of Curriculum Batches.
+
+        ## Args:
+            * fraction  (float):    Fraction of batches to expose, in (0.0, 1.0].
+        """
+        # Clamp to range.
+        fraction:   float = max(0.0, min(1.0, fraction))
+
+        # Compute active batch count - always at least 1.
+        active:     int =   max(1, int(fraction * len(self._batches_)))
+
+        # Slice batches.
+        self._active_ =     self._batches_[:active]
+
+        # Debug action.
+        self.__logger__.debug(f"Active batches: {active}/{len(self._batches_)} ({fraction:.2%})")
 
     # HELPERS ======================================================================================
 
@@ -148,7 +173,7 @@ class Curriculum(BatchSampler):
         ## Yields:
             * Generator:    Batch-wise indices.
         """
-        yield from self._batches_
+        yield from self._active_
 
     @override
     def __len__(self) -> int:
@@ -157,4 +182,4 @@ class Curriculum(BatchSampler):
         ## Returns:
             * int:  Number of batches in sampler.
         """
-        return len(self._batches_)
+        return len(self._active_)

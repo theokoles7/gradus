@@ -36,6 +36,8 @@ class MNIST(Dataset):
         metric:             Optional[Union[str, List[str]]] =   None,
         rank:               str =                               "ascending",
         scope:              str =                               "holistic",
+        schedule:           Optional[str] =                     None,
+        start_fraction:     float =                             0.3,
         normalize_classes:  bool =                              False,
         seed:               int =                               1,
         **kwargs
@@ -105,6 +107,8 @@ class MNIST(Dataset):
             metric =            metric,
             rank =              rank,
             scope =             scope,
+            schedule =          schedule,
+            start_fraction =    start_fraction,
             normalize_classes = normalize_classes,
             seed =              seed
         )

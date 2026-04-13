@@ -260,7 +260,7 @@ class TrainingRecord():
                                 "network_id", "dataset_id", "epochs", "seed", "device",
                                 "final_accuracy", "final_loss", "best_accuracy", "best_loss",
                                 "best_epoch", "shuffled", "normalize_classes", "rank", "metric",
-                                "scope", "record_file", "hash"
+                                "scope", "schedule", "start_fraction", "record_file", "hash"
                             ]
         
         # If master record does not exist, or is empty...
@@ -295,6 +295,8 @@ class TrainingRecord():
                 "rank":                 curriculum.get("rank"),
                 "metric":               curriculum.get("metric"),
                 "scope":                curriculum.get("scope"),
+                "schedule":             curriculum.get("schedule_id"),
+                "start_fraction":       self._dataset_config_.get("start_fraction"),
                 "record_file":          self.record_path,
                 "hash":                 self.hash
             })

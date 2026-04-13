@@ -43,7 +43,7 @@ class DatasetConfig(Config):
         ## Args:
             * parser    (ArgumentParser):   Parser to whom arguments will be attributed.
         """
-        from gradus.registration    import METRIC_REGISTRY, RANK_REGISTRY
+        from gradus.registration    import METRIC_REGISTRY, RANK_REGISTRY, SCHEDULE_REGISTRY
 
         # GENERAL ----------------------------------------------------------------------------------
         general:    _ArgumentGroup =    parser.add_argument_group(
@@ -118,4 +118,21 @@ class DatasetConfig(Config):
             choices =   ["holistic", "batch-wise"],
             default =   "holistic",
             help =      """Scope of curriculum ranking. Defaults to "holistic"."""
+        )
+
+        curriculum.add_argument(
+            "--schedule",
+            dest =      "schedule_id",
+            type =      str,
+            choices =   SCHEDULE_REGISTRY.list_entries(),
+            default =   None,
+            help =      """Curriculum pacing schedule. Defaults to None."""
+        )
+
+        curriculum.add_argument(
+            "--start-fraction",
+            dest =      "start_fraction",
+            type =      float,
+            default =   0.3,
+            help =      """Fraction of curriculum data exposed at epoch 1. Defaults to 0.3."""
         )

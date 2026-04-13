@@ -13,7 +13,7 @@ from typing             import Any, Dict, List, Optional, Tuple, Union
 from torch.utils.data   import DataLoader, Dataset as t_Dataset
 
 from gradus.artifacts   import DatasetMetrics
-from gradus.curricula   import Curriculum
+from gradus.curricula   import Curriculum, Schedule
 from gradus.utilities   import get_logger, get_system_core_count
 
 class Dataset(ABC):
@@ -23,12 +23,15 @@ class Dataset(ABC):
         id:                 str,
         train_data:         t_Dataset,
         test_data:          t_Dataset,
+        epochs:             int,
         batch_size:         int =                               128,
         shuffle:            bool =                              False,
         max_workers:        int =                               get_system_core_count(),
         metric:             Optional[Union[str, List[str]]] =   None,
         rank:               str =                               "ascending",
         scope:              str =                               "holistic",
+        schedule:           Optional[str] =                     None,
+        start_fraction:     float =                             0.3,
         normalize_classes:  bool =                              False,
         seed:               int =                               1,
     ):
@@ -54,7 +57,7 @@ class Dataset(ABC):
             * seed          (int):                      Random number generation seed.
         """
         # Initialize logger.
-        self.__logger__:        Logger =        get_logger(f"{id}-dataset")
+        self.__logger__:            Logger =        get_logger(f"{id}-dataset")
 
         # Define properties.
         self._id_:                  str =           id
@@ -68,8 +71,11 @@ class Dataset(ABC):
         self._metric_:              Optional[str] = metric
         self._rank_:                str =           rank
         self._scope_:               str =           scope
+        self._schedule_id_:         Optional[str] = schedule
+        self._start_fraction_:      float =         start_fraction
+        self._total_epochs_:        int =           epochs
 
-        # Debug initialization. TODO: Figure out how to use cacheed properties in __repr__
+        # Debug initialization.
         self.__logger__.debug(f"Initialized {self}")
 
     # PROPERTIES ===================================================================================
@@ -84,23 +90,30 @@ class Dataset(ABC):
         """# Classification Classes"""
         return self._train_data_.classes
     
-    @cached_property
+    @property
     def curriculum(self) -> Optional[Curriculum]:
         """# Dataset Curriculum"""
-        return  None if self._metric_ is None else Curriculum(
-                    dataset_id =    self._id_,
-                    scores =        DatasetMetrics(
-                                        dataset_id =    self._id_,
-                                        num_samples =   len(self._train_data_),
-                                        seed =          self._seed_,
-                                        scores_path =   ".cache/scores"
-                                    ),
-                    metric =        self._metric_,
-                    rank =          self._rank_,
-                    scope =         self._scope_,
-                    batch_size =    self._batch_size_,
-                    seed =          self._seed_ 
-                )
+        # If no curriculum is being used, return None.
+        if self._metric_ is None: return None
+
+        # Otherwise, cache curriculum as attribute.
+        self._curriculum_:  Curriculum =    Curriculum(
+                                                dataset_id =    self._id_,
+                                                scores =        DatasetMetrics(
+                                                                    dataset_id =    self._id_,
+                                                                    num_samples =   len(self._train_data_),
+                                                                    seed =          self._seed_,
+                                                                    scores_path =   ".cache/scores"
+                                                                ),
+                                                metric =        self._metric_,
+                                                rank =          self._rank_,
+                                                scope =         self._scope_,
+                                                batch_size =    self._batch_size_,
+                                                seed =          self._seed_
+                                            )
+        
+        # Provide curriculum.
+        return self._curriculum_
     
     @property
     def dict(self) -> Dict[str, Any]:
@@ -110,7 +123,9 @@ class Dataset(ABC):
                     "shuffled":             self._shuffle_,
                     "normalize_classes":    self._normalize_classes_,
                     "curriculum":           None if self.curriculum is None \
-                                            else self.curriculum.dict
+                                            else self.curriculum.dict,
+                    "schedule_id":          self._schedule_id_,
+                    "start_fraction":       self._start_fraction_
                 }
     
     @cached_property
@@ -132,6 +147,23 @@ class Dataset(ABC):
     def num_classes(self) -> int:
         """# Number of Classes"""
         return len(self.classes)
+    
+    @cached_property
+    def schedule(self) -> Optional[Schedule]:
+        """# Curriculum Pacing Schedule"""
+        # If no curriculum/schedule is defined, no curriculum.
+        if self._schedule_id_ is None or self._metric_ is None: return None
+
+        # Otherwise, import schedule registry.
+        from gradus.registration    import SCHEDULE_REGISTRY
+
+        # Load schedule.
+        return  SCHEDULE_REGISTRY.load_schedule(
+                    schedule_id =       self._schedule_id_,
+                    total_samples =     len(self._train_data_),
+                    total_epochs =      self._total_epochs_,
+                    start_fraction =    self._start_fraction_
+                )
     
     @property
     def shuffled(self) -> bool:
@@ -193,6 +225,27 @@ class Dataset(ABC):
     def width(self) -> int:
         """# Input Width"""
         return self.input_shape[2]
+    
+    # METHODS ======================================================================================
+
+    def step(self,
+        epoch:      int,
+        **metrics:  Any
+    ) -> None:
+        """# Advance Curriculum Pacing schedule.
+
+        ## Args:
+            * epoch     (int):  Current training epoch.
+            * metrics   (Any):  Metrics upon which schedule is dependent.
+        """
+        # If no curriculum or no schedule, no-op.
+        if self.curriculum is None or self._schedule_id_ is None: return
+
+        # Step schedule.
+        fraction:   float = self.schedule.step(epoch = epoch, **metrics)
+
+        # Apply fraction to curriculum.
+        self.curriculum.set_fraction(fraction)
     
     # DUNDERS ======================================================================================
 
