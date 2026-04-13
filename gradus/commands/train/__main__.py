@@ -20,7 +20,7 @@ from gradus.registration                import register_command
 def train_entry_point(
     network_id:     str,
     dataset_id:     str,
-    epochs:         int =                                               100,
+    epochs:         int =                                               200,
     seed:           int =                                               1,
     device:         Union[Literal["auto", "cpu", "cuda"], t_device] =   "auto",
     output_path:    str =                                               "results",
@@ -35,7 +35,7 @@ def train_entry_point(
         * dataset_id    (str):          Identifier of dataset upon which neural network will be 
                                         trained.
         * epochs        (int):          Number of training/validation epochs to administer. Defaults 
-                                        to 100.
+                                        to 200.
         * seed          (int):          Random seed for reproducibility. Defaults to 1.
         * device        (str | device): Hardware device upon which data will be processed. Defaults 
                                         to "auto".
@@ -121,7 +121,7 @@ def train_entry_point(
         logger.info(f"Training already recorded (hash = {train_record.hash})"); return
 
     # Log action.
-    logger.info(f"Train process initiated (network = {network_id}; dataset = {dataset_id})")
+    logger.info(f"Train process initiated (network = {network}; dataset = {dataset}' epochs = {epochs})")
 
 
     # For each epoch prescribed...

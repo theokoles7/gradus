@@ -65,8 +65,8 @@ class DatasetConfig(Config):
             "--batch-size",
             dest =      "batch_size",
             type =      int,
-            default =   64,
-            help =      """Number of samples per batch to load. Defaults to 64."""
+            default =   128,
+            help =      """Number of samples per batch to load. Defaults to 128."""
         )
 
         general.add_argument(

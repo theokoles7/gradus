@@ -38,8 +38,8 @@ class TrainConfig(CommandConfig):
             "--epochs",
             dest =      "epochs",
             type =      int,
-            default =   100,
-            help =      """Number of training/validation epochs to administer. Defaults to 100."""
+            default =   200,
+            help =      """Number of training/validation epochs to administer. Defaults to 200."""
         )
 
         parser.add_argument(
