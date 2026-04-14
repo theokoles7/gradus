@@ -117,7 +117,8 @@ def train_entry_point(
                                             device =            device,
                                             seed =              seed,
                                             output_path =       output_path,
-                                            cache_path =        cache_path
+                                            cache_path =        cache_path,
+                                            max_batches =       len(dataset.train_loader)
                                         )
     
     # If training record already exists...
@@ -228,7 +229,14 @@ def train_entry_point(
         val_loss:       float = round(val_total_loss / len(dataset.test_loader),    4)
             
         # Record epoch results.
-        train_record.record_epoch(epoch, train_accuracy, train_loss, val_accuracy, val_loss)
+        train_record.record_epoch(
+            epoch =             epoch,
+            train_accuracy =    train_accuracy,
+            train_loss =        train_loss,
+            val_accuracy =      val_accuracy,
+            val_loss =          val_loss,
+            batches =           len(dataset.train_loader)
+        )
 
         # Log epoch results.
         logger.info(

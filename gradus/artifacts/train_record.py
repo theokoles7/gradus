@@ -26,7 +26,8 @@ class TrainingRecord():
         device:         t_device,
         seed:           int,
         output_path:    Union[str, Path] =  "results",
-        cache_path:     Union[str, Path] =  ".cache"
+        cache_path:     Union[str, Path] =  ".cache",
+        max_batches:    int =               0
     ):
         """# Instantiate Training Record.
 
@@ -51,6 +52,7 @@ class TrainingRecord():
         self._device_:          t_device =          device
         self._seed_:            int =               seed
         self._epochs_:          Dict[int, Dict] =   {}
+        self._max_batches_:     int =               max_batches
 
         # Resolve paths.
         self._output_path_:     Path =              Path(output_path);  self._output_path_.mkdir(
@@ -114,6 +116,28 @@ class TrainingRecord():
                     "device":       str(self._device_),
                     "num_epochs":   self._num_epochs_,
                 }
+    
+    @property
+    def dsi(self) -> float:
+        """# Data Saving Index
+
+        Fraction of total possible training data that was not processed, due to curriculum pacing. 
+        Returns None when no schedule was active (i.e., all epochs used full data).
+        """
+        # Extract recorded batch counts.
+        batch_counts:   List[int] = [e["batches"] for e in self._epochs_.values()]
+
+        # If no batch counts were recorded, DSI is not applicable.
+        if not any(b is not None for b in batch_counts): return None
+
+        # Sum the number of batches processes.
+        processed:      int =       sum(b for b in batch_counts if b is not None)
+
+        # Calculate the maximum number of epochs possible for training.
+        max_batches:    int =       self._max_batches_ * self._num_epochs_
+
+        # Compute DSI.
+        return round(1.0 - (processed / max_batches), 4)
     
     @property
     def final_accuracy(self) -> float:
@@ -198,13 +222,18 @@ class TrainingRecord():
         train_accuracy: float,
         train_loss:     float,
         val_accuracy:   float,
-        val_loss:       float
+        val_loss:       float,
+        batches:        int
     ) -> None:
         """# Record Epoch Results.
 
         ## Args:
-            * accuracy  (float):    Model's classification accuracy.
-            * loss      (float):    Classification loss score.
+            * epoch     (int):  Epoch being recorded.
+            * train_accuracy    (float):    Train accuracy during epoch.
+            * train_loss        (float):    Train loss during epoch.
+            * val_accuracy      (float):    Validation accuracy during epoch.
+            * val_loss          (float):    Validation loss during epoch.
+            * batches           (int):      Number of batches used in epoch.
         """
         # Record epoch data.
         self._epochs_[epoch] =  {
@@ -215,7 +244,8 @@ class TrainingRecord():
                                     "validation":   {
                                                         "accuracy": val_accuracy,
                                                         "loss":     val_loss
-                                                    }
+                                                    },
+                                    "batches":      batches
                                 }
         
         # Debug record.
@@ -228,7 +258,7 @@ class TrainingRecord():
 
         # Save verbose record.
         self._save_verbose_record_()
-
+        
     def to_dict(self) -> Dict[str, Any]:
         """# Dictionary Representation of Training Record.
 
@@ -260,7 +290,7 @@ class TrainingRecord():
                                 "network_id", "dataset_id", "epochs", "seed", "device",
                                 "final_accuracy", "final_loss", "best_accuracy", "best_loss",
                                 "best_epoch", "shuffled", "normalize_classes", "rank", "metric",
-                                "scope", "schedule", "start_fraction", "record_file", "hash"
+                                "scope", "schedule", "start_fraction", "dsi", "record_file", "hash"
                             ]
         
         # If master record does not exist, or is empty...
@@ -295,8 +325,9 @@ class TrainingRecord():
                 "rank":                 curriculum.get("rank"),
                 "metric":               curriculum.get("metric"),
                 "scope":                curriculum.get("scope"),
-                "schedule":             curriculum.get("schedule_id"),
+                "schedule":             self._dataset_config_.get("schedule_id"),
                 "start_fraction":       self._dataset_config_.get("start_fraction"),
+                "dsi":                  self.dsi,
                 "record_file":          self.record_path,
                 "hash":                 self.hash
             })
