@@ -34,6 +34,8 @@ __all__ =   [
                 "Descending", 
                 "DistanceFromMean",
                 "Lexicographic",
+                "NormalizedMean",
+                "PairwiseCorrelation",
                 "Weighted",
 
                 # SCHEDULES ========================================================================
@@ -42,6 +44,7 @@ __all__ =   [
                 "Schedule",
 
                 # Concrete
+                "AdaptiveSchedule",
                 "LinearSchedule",
             ]
 

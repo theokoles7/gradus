@@ -10,7 +10,7 @@ from hashlib            import md5
 from json               import dumps
 from logging            import Logger
 from pathlib            import Path
-from typing             import Any, Dict, List, Union
+from typing             import Any, Dict, List, Optional, Union
 
 from torch              import device as t_device
 
@@ -118,7 +118,7 @@ class TrainingRecord():
                 }
     
     @property
-    def dsi(self) -> float:
+    def dsi(self) -> Optional[float]:
         """# Data Saving Index
 
         Fraction of total possible training data that was not processed, due to curriculum pacing. 

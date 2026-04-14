@@ -54,7 +54,7 @@ def score_dataset_entry_point(
     logger:         Logger =            get_logger("dataset-scoring")
 
     # Load dataset.
-    dataset:        Dataset =           DATASET_REGISTRY.load_dataset(dataset_id, **{
+    dataset:        Dataset =           DATASET_REGISTRY.load_dataset(dataset_id, epochs = 1, **{
                                             k: v for k, v in kwargs.items()
                                             if k not in {
                                                 "metric", "rank", "scope",
