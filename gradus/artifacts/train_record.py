@@ -119,10 +119,12 @@ class TrainingRecord():
     
     @property
     def dsi(self) -> Optional[float]:
-        """# Data Saving Index
+        """# Data Saturation Index
 
-        Fraction of total possible training data that was not processed, due to curriculum pacing. 
-        Returns None when no schedule was active (i.e., all epochs used full data).
+        Sum of the number of batches used at each epoch divided by the total number of batches in
+        the dataset (one-epoch size). For a baseline run using the full dataset every epoch, this
+        equals ``num_epochs``; curriculum runs that skip data score lower. Returns None when no
+        batch counts or max-batches reference is available.
         """
         # Extract recorded batch counts.
         batch_counts:   List[int] = [e["batches"] for e in self._epochs_.values()]
@@ -130,14 +132,29 @@ class TrainingRecord():
         # If no batch counts were recorded, DSI is not applicable.
         if not any(b is not None for b in batch_counts): return None
 
-        # Sum the number of batches processes.
+        # If per-epoch max-batches reference is unavailable, DSI is not applicable.
+        if not self._max_batches_: return None
+
+        # Sum the number of batches processed across all epochs.
         processed:      int =       sum(b for b in batch_counts if b is not None)
 
-        # Calculate the maximum number of epochs possible for training.
-        max_batches:    int =       self._max_batches_ * self._num_epochs_
+        # Compute DSI: fraction of dataset processed, summed across epochs.
+        return round(processed / self._max_batches_, 4)
 
-        # Compute DSI.
-        return round(1.0 - (processed / max_batches), 4)
+    @property
+    def batches_per_epoch(self) -> List[Optional[int]]:
+        """# Batches Processed at Each Recorded Epoch"""
+        return [e["batches"] for e in self._epochs_.values()]
+
+    @property
+    def max_batches(self) -> int:
+        """# Batches Available Per Epoch (Full Dataset Size)"""
+        return self._max_batches_
+
+    @property
+    def total_batches_processed(self) -> int:
+        """# Total Batches Processed Across All Epochs"""
+        return sum(b for b in self.batches_per_epoch if b is not None)
     
     @property
     def final_accuracy(self) -> float:
@@ -276,6 +293,10 @@ class TrainingRecord():
                     "final_train_loss":     self.train_losses[-1],
                     "final_val_accuracy":   self.validation_accuracies[-1],
                     "final_val_loss":       self.validation_losses[-1],
+                    "dsi":                      self.dsi,
+                    "max_batches_per_epoch":    self._max_batches_,
+                    "total_batches_processed":  self.total_batches_processed,
+                    "batches_per_epoch":        self.batches_per_epoch,
                     "epochs":               self._epochs_,
                 }
     
@@ -290,7 +311,9 @@ class TrainingRecord():
                                 "network_id", "dataset_id", "epochs", "seed", "device",
                                 "final_accuracy", "final_loss", "best_accuracy", "best_loss",
                                 "best_epoch", "shuffled", "normalize_classes", "rank", "metric",
-                                "scope", "schedule", "start_fraction", "dsi", "record_file", "hash"
+                                "scope", "schedule", "start_fraction", "dsi",
+                                "max_batches_per_epoch", "total_batches_processed",
+                                "record_file", "hash"
                             ]
         
         # If master record does not exist, or is empty...
@@ -328,6 +351,8 @@ class TrainingRecord():
                 "schedule":             self._dataset_config_.get("schedule_id"),
                 "start_fraction":       self._dataset_config_.get("start_fraction"),
                 "dsi":                  self.dsi,
+                "max_batches_per_epoch":    self._max_batches_,
+                "total_batches_processed":  self.total_batches_processed,
                 "record_file":          self.record_path,
                 "hash":                 self.hash
             })
@@ -351,6 +376,10 @@ class TrainingRecord():
             dump({
                 "config":   self.config,
                 "results":  self.results,
+                "dsi":                      self.dsi,
+                "max_batches_per_epoch":    self._max_batches_,
+                "total_batches_processed":  self.total_batches_processed,
+                "batches_per_epoch":        self.batches_per_epoch,
                 "epochs":   self._epochs_
             }, training_record, indent = 2, default = str)
 
