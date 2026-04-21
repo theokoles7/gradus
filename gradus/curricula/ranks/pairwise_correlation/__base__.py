@@ -23,7 +23,7 @@ class PairwiseCorrelation(Rank):
     def __init__(self,
         dataset_id: str,
         scores:     DataFrame,
-        metric:     Union[str, List[str]] = None,
+        metric:     Union[str, List[str]],
         cache_dir:  Union[str, Path] =      ".cache/ranks",
         seed:       int =                   1,
     ):
@@ -33,25 +33,13 @@ class PairwiseCorrelation(Rank):
             * dataset_id    (str):              Identifier of dataset whose samples are being 
                                                 ranked.
             * scores        (DataFrame):        Dataset metric scores.
-            * metric        (str | List[str])   Subset of metric columns to base correlation on. 
-                                                Defaults to all.
+            * metric        (str | List[str])   Subset of metric columns to base correlation on.
             * cache_dir     (str | Path):       Directory under which keyed indices will be cached. 
                                                 Defaults to "./.cache/ranks/".
             * seed          (int):              Random number generation seed. Defaults to 1.
         """
-        # If no metric specification is provided...
-        if metric is None:
-            
-            # Default to all metrics.
-            self._cols_:    List[str] = [
-                                            col for col in scores.columns
-                                            if col != "index"
-                                            and scores[col].dtype in ("float64", "int64")
-                                        ]
-            
-        # Otherwise, ensure that metrics are a list.
-        elif isinstance(metric, str):   self._cols_:    List[str] = [metric]
-        else:                           self._cols_:    List[str] = list(metric)
+        # Define properties.
+        self._metric_:  List[str] = [metric] if isinstance(metric, str) else metric
 
         # Initialize protocol.
         super(PairwiseCorrelation, self).__init__(
@@ -79,7 +67,7 @@ class PairwiseCorrelation(Rank):
         INVERTED:   List[str] = METRIC_REGISTRY.list_entries(filter_by = ["inverted"])
 
         # Extract attribute matrix.
-        attributes: NDArray =    self._scores_[self._cols_].values.astype(float)
+        attributes: NDArray =    self._scores_[self._metric_].values.astype(float)
 
         # Min-max normalize each column.
         col_mins:   NDArray =    attributes.min(axis = 0)
@@ -94,8 +82,8 @@ class PairwiseCorrelation(Rank):
 
         # Invert necessary metrics so higher = more complex.
         for col in INVERTED:
-            if col in self._cols_:
-                normalized[:, self._cols_.index(col)] = 1.0 - normalized[:, self._cols_.index(col)]
+            if col in self._metric_:
+                normalized[:, self._metric_.index(col)] = 1.0 - normalized[:, self._metric_.index(col)]
 
         # Center each row and L2-normalize — enables Pearson via dot product.
         centered:   NDArray =    normalized - normalized.mean(axis = 1, keepdims = True)

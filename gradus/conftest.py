@@ -4,14 +4,67 @@ Test configurations, methods, & fixtures.
 """
 
 from pathlib                import Path
-from typing                 import Dict
+from typing                 import Dict, Generator
 
+from numpy.random           import default_rng
+from pandas                 import DataFrame
 from PIL.Image              import open as open_image
-from pytest                 import fixture
+from pytest                 import fixture, TempPathFactory
 from torch                  import Tensor
 from torchvision.transforms import ToTensor
 
 # FIXTURES =========================================================================================
+
+@fixture(scope = "session")
+def synthetic_scores() -> DataFrame:
+    """# Synthetic Scores DataFrame for Rank Testing.
+ 
+    Builds a small, fully deterministic scores DataFrame with known metric values. All rank tests 
+    use this fixture so they never depend on pre-computed score files being present on disk.
+ 
+    Shape: 20 samples × 4 metrics, no NaNs, reproducible via seed.
+    """
+    # Construct default random number generator.
+    rng:    Generator = default_rng(seed = 1)
+ 
+    # Define number of samples.
+    n:      int =       20
+
+    # Create sample dataframe.
+    return  DataFrame({
+                "index":                list(range(n)),
+                "class":                [str(i % 4) for i in range(n)],
+                "saturation-time":      rng.uniform(1.0, 100.0, n),
+                "color-variance":       rng.uniform(0.0,   1.0, n),
+                "edge-density":         rng.uniform(0.0,   0.5, n),
+                "spatial-frequency":    rng.uniform(0.0,   0.3, n),
+            })
+ 
+ 
+@fixture(scope = "session")
+def synthetic_scores_path(
+    tmp_path_factory:   TempPathFactory,
+    synthetic_scores:   DataFrame
+) -> "Path":
+    """# Write Synthetic Scores to a Temp Parquet File.
+ 
+    Provides a real scores_path that DatasetMetrics can load from,
+    for tests that exercise the full DatasetMetrics → Rank pipeline.
+    """
+    from pathlib    import Path
+ 
+    # Resolve scores path.
+    path:   Path =  tmp_path_factory.mktemp("scores") / "test-dataset" / "metric-scores_seed-1.parquet"
+    
+    # Ensure path exists.
+    path.parent.mkdir(parents = True, exist_ok = True)
+
+    # Save to file.
+    synthetic_scores.to_parquet(path, index = False)
+ 
+    # Provide path to scores.
+    return path.parent
+
 
 @fixture(scope = "session")
 def test_samples() -> Dict[str, Tensor]:
@@ -19,7 +72,7 @@ def test_samples() -> Dict[str, Tensor]:
     from gradus.commands.generate_samples.__main__  import generate_samples_entry_point
 
     # Form samples path.
-    path:       Path =  Path(".cache/test-samples")
+    path:       Path =      Path(".cache/test-samples")
 
     # Load transform.
     transform:  ToTensor =  ToTensor()

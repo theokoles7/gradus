@@ -30,7 +30,7 @@ class NormalizedMean(Rank):
     def __init__(self,
         dataset_id: str,
         scores:     DataFrame,
-        metric:     Union[str, List[str]] = None,
+        metric:     Union[str, List[str]],
         seed:       int =                   1,
         cache_dir:  Union[str, Path] =      ".cache/ranks"
     ):
@@ -40,25 +40,13 @@ class NormalizedMean(Rank):
             * dataset_id    (str):                      Identifier of dataset whose samples are 
                                                         being ranked.
             * scores        (DataFrame):                Dataset metric scores.
-            * metric        (str | List[str] | None):   Metric columns to include. Defaults to all
-                                                        numeric columns.
+            * metric        (str | List[str] | None):   Metric columns to include.
             * seed          (int):                      Random number generation seed. Defaults to 1.
             * cache_dir     (str | Path):               Directory under which keyed indices will be 
                                                         cached. Defaults to "./.cache/ranks/".
         """
-        # If no metric specification is provided...
-        if metric is None:
-            
-            # Default to all metrics.
-            self._cols_:    List[str] = [
-                                            col for col in scores.columns
-                                            if col != "index"
-                                            and scores[col].dtype in ("float64", "int64")
-                                        ]
-            
-        # Otherwise, ensure that metrics are a list.
-        elif isinstance(metric, str):   self._cols_:    List[str] = [metric]
-        else:                           self._cols_:    List[str] = list(metric)
+        # Define properties.
+        self._metric_:  List[str] = [metric] if isinstance(metric, str) else metric
 
         # Initialize protocol.
         super(NormalizedMean, self).__init__(
@@ -84,10 +72,10 @@ class NormalizedMean(Rank):
         INVERTED:   List[str] = METRIC_REGISTRY.list_entries(filter_by = ["inverted"])
 
         # Extract and copy relevant columns.
-        normalized:     DataFrame = self._scores_[self._cols_].copy().astype(float)
+        normalized:     DataFrame = self._scores_[self._metric_].copy().astype(float)
 
         # Min-max normalize each column.
-        for col in self._cols_:
+        for col in self._metric_:
             col_min:    float =     normalized[col].min()
             col_max:    float =     normalized[col].max()
             col_range:  float =     col_max - col_min
@@ -100,7 +88,7 @@ class NormalizedMean(Rank):
         for col in INVERTED:
 
             # Invert the values, such that higher = more complex.
-            if col in self._cols_:         normalized[col] = 1.0 - normalized[col]
+            if col in self._metric_:         normalized[col] = 1.0 - normalized[col]
 
         # Compute equal-weighted mean across all columns as the composite score.
         composite:      Series =    normalized.mean(axis = 1)
