@@ -34,7 +34,7 @@ __all__ =   [
 
 from gradus.networks.autoencoder    import Autoencoder
 from gradus.networks.cnn            import CNN
+from gradus.networks.cvt            import *
 from gradus.networks.protocol       import Network
 from gradus.networks.resnet         import *
 from gradus.networks.vgg            import *
-from gradus.networks.cvt            import *
