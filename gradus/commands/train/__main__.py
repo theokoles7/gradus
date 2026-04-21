@@ -80,12 +80,6 @@ def train_entry_point(
                                             epochs =        epochs,
                                             **kwargs
                                         )
-    
-    # Determine if this training is using adaptive scheduling.
-    adaptive:       bool =              (
-                                            dataset.schedule is not None and
-                                            dataset.schedule.id == "adaptive"
-                                        )
 
     # Load neural network.
     network:        Network =           NETWORK_REGISTRY.load_network(
@@ -94,6 +88,12 @@ def train_entry_point(
                                             num_classes =   dataset.num_classes,
                                             **kwargs
                                         ).to(device)
+    
+    # Determine if this training is using adaptive scheduling.
+    adaptive:       bool =              (
+                                            dataset.schedule is not None and
+                                            dataset.schedule.id == "adaptive"
+                                        )
 
     # Initialize optimizer.
     optimizer:      SGD =               SGD(
