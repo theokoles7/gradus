@@ -90,7 +90,7 @@ class Dataset(ABC):
         """# Classification Classes"""
         return self._train_data_.classes
     
-    @property
+    @cached_property
     def curriculum(self) -> Optional[Curriculum]:
         """# Dataset Curriculum"""
         # If no curriculum is being used, return None.
