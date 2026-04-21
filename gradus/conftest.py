@@ -63,7 +63,7 @@ def synthetic_scores_path(
     synthetic_scores.to_parquet(path, index = False)
  
     # Provide path to scores.
-    return path.parent
+    return path.parent.parent
 
 
 @fixture(scope = "session")
