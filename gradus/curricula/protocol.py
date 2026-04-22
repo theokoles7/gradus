@@ -118,6 +118,8 @@ class Curriculum(BatchSampler):
         ## Returns:
             * List[List[int]]:  Batch-wise indice ranks.
         """
+        from numpy.random   import default_rng
+
         # Log action.
         self.__logger__.info(
             f"Constructing batch-wise ranks (metrics = {self._metric_}, rank = {self._rank_})"
@@ -125,6 +127,9 @@ class Curriculum(BatchSampler):
 
         # Extract indices.
         indices:    List[int] = list(range(len(self._scores_.scores)))
+
+        # Shuffle indices before chunking into batches.
+        default_rng(seed = self._seed_).shuffle(indices)
 
         # Construct batch-wise ranks.
         return  [
