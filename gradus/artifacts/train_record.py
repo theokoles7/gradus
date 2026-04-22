@@ -144,7 +144,7 @@ class TrainingRecord():
         processed:      int =       sum(b for b in batch_counts if b is not None)
 
         # Compute DSI: fraction of dataset processed, summed across epochs.
-        return round(processed / self._max_batches_, 4)
+        return round(1.0 - (processed / (self._max_batches_ * self._num_epochs_)), 4)
     
     @property
     def final_accuracy(self) -> float:
