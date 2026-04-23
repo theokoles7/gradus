@@ -59,7 +59,7 @@ def train_entry_point(
     from gradus.artifacts           import TrainingRecord
     from gradus.datasets            import Dataset
     from gradus.networks            import Network
-    from gradus.registration        import DATASET_REGISTRY, NETWORK_REGISTRY
+    from gradus.registration        import DATASET_REGISTRY, NETWORK_REGISTRY, SCHEDULE_REGISTRY
     from gradus.utilities           import determine_device, get_logger, set_seed
 
     # Initialize logger.
@@ -92,7 +92,10 @@ def train_entry_point(
     # Determine if this training is using adaptive scheduling.
     adaptive:       bool =              (
                                             dataset.schedule is not None and
-                                            dataset.schedule.id == "adaptive"
+                                            dataset.schedule.id in  SCHEDULE_REGISTRY.list_entries(
+                                                                        filter_by = ["adaptive"]
+                                                                    )
+                                            
                                         )
 
     # Initialize optimizer.
@@ -151,6 +154,16 @@ def train_entry_point(
             # Place network in training mode.
             network.train(); progress_bar.set_postfix(status = f"Training")
 
+            # Extract curriculum indices.
+            curriculum_indices: List[int] = (
+                                                dataset.curriculum.batch_indices
+                                                if dataset.curriculum is not None
+                                                else None
+            )
+            
+            # print(f"len(curriculum_indices): {len(curriculum_indices) if curriculum_indices else None}")
+            # print(f"len(dataset.train_loader): {len(dataset.train_loader)}")
+
             # For each batch in the training dataset...
             for b, (samples, targets) in enumerate(dataset.train_loader):
 
@@ -190,6 +203,9 @@ def train_entry_point(
                     # Compute mean of L2 norm.
                     mean_grad_norm: float =         sum(grad_norms) / len(grad_norms) \
                                                     if grad_norms else 0.0
+                    
+                    # Use original curriculum batch index, not loop counter.
+                    actual_idx: int = curriculum_indices[b] if curriculum_indices is not None else b
                     
                     # Accumulate records.
                     batch_std_rows.append( {"batch_idx": b, "mean_std":       mean_std})
@@ -264,9 +280,9 @@ def train_entry_point(
 
         # Advance curriculum pacing schedule.
         dataset.step(
-            epoch =     epoch,
-            loss =      train_loss,
-            val_acc =   val_accuracy,
+            epoch =         epoch,
+            loss =          train_loss,
+            val_acc =       val_accuracy,
             std_df =        std_df,
             grad_norm_df =  grad_norm_df
         )

@@ -45,6 +45,7 @@ __all__ =   [
 
                 # Concrete
                 "AdaptiveSchedule",
+                "GradientSchedule",
                 "LinearSchedule",
             ]
 

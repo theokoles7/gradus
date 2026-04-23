@@ -70,53 +70,74 @@ class Curriculum(BatchSampler):
 
             # Invalid
             case _:             raise ValueError(
-                                    f"Invalid scope specified: {scope}"
-                                    "Valid scopes are: batch-wise, holistic"
+                                    f"Invalid scope specified: {scope}. "
+                                    f"Valid scopes are: batch-wise, holistic"
                                 )
-            
-        # Initialize active batches.
+
+        # Initialize active batches to full curriculum in natural order.
         self._active_:      List[List[int]] =   self._batches_
-            
+
     # PROPERTIES ===================================================================================
+
+    @property
+    def batch_indices(self) -> List[int]:
+        """# Original Batch Indices in Current Active Order"""
+        return getattr(self, "_current_order_", list(range(len(self._batches_))))
 
     @property
     def dict(self) -> Dict[str, Any]:
         """# Curriculum Dictionary Representation"""
         return  {
-            "rank":     self._rank_,
-            "metric":   self._metric_,
-            "scope":    self._scope_        
-        }
-    
+                    "rank":     self._rank_,
+                    "metric":   self._metric_,
+                    "scope":    self._scope_,
+                }
+
     # METHODS ======================================================================================
 
-    def set_fraction(self,
-        fraction:   float
+    def set_order(self,
+        order:  List[int]
     ) -> None:
-        """# Set Active Fraction of Curriculum Batches.
+        """# Set Active Batch Ordering.
+
+        Reorders and/or subsets the curriculum batches according to the provided
+        list of batch indices. This is the single method through which all schedule
+        types control what the training loop sees each epoch:
+
+            - Linear/Adaptive: pass [0, 1, ..., N] to expose a prefix of the curriculum.
+            - Gradient: pass all indices sorted by descending gradient norm.
 
         ## Args:
-            * fraction  (float):    Fraction of batches to expose, in (0.0, 1.0].
+            * order (List[int]):    Ordered list of batch indices to expose. Each index
+                                    must be in [0, len(self._batches_)).
         """
-        # Clamp to range.
-        fraction:   float = max(0.0, min(1.0, fraction))
+        # Clamp indices to valid range and deduplicate while preserving order.
+        total:          int =           len(self._batches_)
+        valid_order:    List[int] =     [i for i in order if 0 <= i < total]
+        self._current_order_ = valid_order
 
-        # Compute active batch count - always at least 1.
-        active:     int =   max(1, int(fraction * len(self._batches_)))
+        # Always expose at least one batch.
+        if not valid_order: valid_order = [0]
 
-        # Slice batches.
-        self._active_ =     self._batches_[:active]
+        # Apply ordering.
+        self._active_ = [self._batches_[i] for i in valid_order]
 
         # Debug action.
-        self.__logger__.debug(f"Active batches: {active}/{len(self._batches_)} ({fraction:.2%})")
+        self.__logger__.debug(
+            f"Active order: {len(self._active_)}/{total} batches, "
+            f"first 5 indices: {valid_order[:5]}"
+        )
 
     # HELPERS ======================================================================================
 
     def _batch_wise_rank_(self) -> List[List[int]]:
         """# Construct Batch-Wise Ranks.
 
+        Shuffles indices before chunking to break class grouping, then sorts
+        samples within each chunk by the specified metric.
+
         ## Returns:
-            * List[List[int]]:  Batch-wise indice ranks.
+            * List[List[int]]:  Batch-wise ranked indices.
         """
         from numpy.random   import default_rng
 
@@ -125,36 +146,34 @@ class Curriculum(BatchSampler):
             f"Constructing batch-wise ranks (metrics = {self._metric_}, rank = {self._rank_})"
         )
 
-        # Extract indices.
+        # Shuffle indices before chunking to break class grouping.
         indices:    List[int] = list(range(len(self._scores_.scores)))
-
-        # Shuffle indices before chunking into batches.
         default_rng(seed = self._seed_).shuffle(indices)
 
-        # Construct batch-wise ranks.
+        # Construct batch-wise ranks on shuffled chunks.
         return  [
-            RANK_REGISTRY.sort_indices(
-                rank_id =       self._rank_,
-                dataset_id =    self._dataset_id_,
-                metric =        self._metric_,
-                scores =        self._scores_.scores.iloc[indices[i:i + self._batch_size_]],
-                seed =          self._seed_
-            )
-            for i in range(0, len(indices), self._batch_size_)
-        ]
-    
+                    RANK_REGISTRY.sort_indices(
+                        rank_id =       self._rank_,
+                        dataset_id =    self._dataset_id_,
+                        metric =        self._metric_,
+                        scores =        self._scores_.scores.iloc[indices[i:i + self._batch_size_]],
+                        seed =          self._seed_
+                    )
+                    for i in range(0, len(indices), self._batch_size_)
+                ]
+
     def _holistic_rank_(self) -> List[List[int]]:
         """# Construct Holistic Ranks.
 
         ## Returns:
-            * List[List[int]]:  Holistic indice ranks.
+            * List[List[int]]:  Holistic ranked indices.
         """
         # Log action.
         self.__logger__.info(
             f"Constructing holistic ranks (metrics = {self._metric_}, rank = {self._rank_})"
         )
 
-        # Rank indices.
+        # Rank indices globally.
         indices:    List[int] = RANK_REGISTRY.sort_indices(
                                     rank_id =       self._rank_,
                                     dataset_id =    self._dataset_id_,
@@ -162,7 +181,7 @@ class Curriculum(BatchSampler):
                                     scores =        self._scores_.scores,
                                     seed =          self._seed_
                                 )
-        
+
         # Break out into batches.
         return  [
                     indices[i:i + self._batch_size_]
@@ -182,9 +201,9 @@ class Curriculum(BatchSampler):
 
     @override
     def __len__(self) -> int:
-        """# Batch Quantity
+        """# Active Batch Quantity
 
         ## Returns:
-            * int:  Number of batches in sampler.
+            * int:  Number of active batches.
         """
         return len(self._active_)

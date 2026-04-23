@@ -162,7 +162,8 @@ class Dataset(ABC):
                     schedule_id =       self._schedule_id_,
                     total_samples =     len(self._train_data_),
                     total_epochs =      self._total_epochs_,
-                    start_fraction =    self._start_fraction_
+                    start_fraction =    self._start_fraction_,
+                    batch_size =        self._batch_size_
                 )
     
     @property
@@ -227,25 +228,19 @@ class Dataset(ABC):
         return self.input_shape[2]
     
     # METHODS ======================================================================================
-
+ 
     def step(self,
         epoch:      int,
         **metrics:  Any
     ) -> None:
-        """# Advance Curriculum Pacing schedule.
-
-        ## Args:
-            * epoch     (int):  Current training epoch.
-            * metrics   (Any):  Metrics upon which schedule is dependent.
-        """
         # If no curriculum or no schedule, no-op.
         if self.curriculum is None or self._schedule_id_ is None: return
 
-        # Step schedule.
-        fraction:   float = self.schedule.step(epoch = epoch, **metrics)
+        # Step schedule — returns ordered list of batch indices.
+        order: List[int] = self.schedule.step(epoch = epoch, **metrics)
 
-        # Apply fraction to curriculum.
-        self.curriculum.set_fraction(fraction)
+        # Apply ordering to curriculum.
+        self.curriculum.set_order(order)
     
     # DUNDERS ======================================================================================
 
