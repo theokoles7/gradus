@@ -19,7 +19,7 @@ class AdaptiveSchedule(Schedule):
     """# Adaptive Curriculum Pacing Schedule
 
     Controls the rate at which new curriculum data is introduced by monitoring four training signals
-    — loss plateau, validation accuracy trend, activation stability, and gradient norm stability —
+    - loss plateau, validation accuracy trend, activation stability, and gradient norm stability -
     and computing a composite readiness score that drives pacing decisions each epoch. Batches are
     always exposed in natural curriculum order (easiest first), starting from batch 0, and the
     active set grows monotonically.

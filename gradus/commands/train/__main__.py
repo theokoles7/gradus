@@ -285,7 +285,7 @@ def train_entry_point(
             std_df =        None
             grad_norm_df =  None
 
-        # Build entropy DataFrame regardless of adaptive flag — uncertainty schedule
+        # Build entropy DataFrame regardless of adaptive flag - uncertainty schedule
         # uses softmax entropy which is available from every forward pass.
         from pandas import DataFrame
         entropy_df: DataFrame = DataFrame(batch_entropy_rows).set_index("batch_idx") \

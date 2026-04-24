@@ -236,7 +236,7 @@ class Dataset(ABC):
         # If no curriculum or no schedule, no-op.
         if self.curriculum is None or self._schedule_id_ is None: return
 
-        # Step schedule — returns ordered list of batch indices.
+        # Step schedule - returns ordered list of batch indices.
         order: List[int] = self.schedule.step(epoch = epoch, **metrics)
 
         # Apply ordering to curriculum.

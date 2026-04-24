@@ -264,7 +264,7 @@ class TestWeightedOrder:
 
         # The two orderings should differ because the composite incorporates correlated metrics.
         assert  weighted != ascending,                                  \
-                "Weighted ordering is identical to plain ascending — "  \
+                "Weighted ordering is identical to plain ascending - "  \
                 "correlation weighting appears to have no effect."
 
     def test_ordering_consistent_across_anchor_metrics(self,

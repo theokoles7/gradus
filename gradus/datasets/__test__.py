@@ -58,7 +58,7 @@ class TestCurriculumBatchComposition:
     """# Curriculum Batch Composition Tests
 
     Verifies that the Curriculum sampler yields batches whose indices are exactly the ranked 
-    indices chunked into batch_size groups — no reordering, no missing samples, no extra samples.
+    indices chunked into batch_size groups - no reordering, no missing samples, no extra samples.
     """
 
     def test_first_batch_matches_first_n_ranked_indices(self,
@@ -69,7 +69,7 @@ class TestCurriculumBatchComposition:
         """First Batch Indices Should Exactly Match First batch_size Ranked Indices.
 
         This is the core regression test. If the curriculum ordering is applied correctly, the 
-        first batch must contain exactly the first batch_size samples from the rank file — no 
+        first batch must contain exactly the first batch_size samples from the rank file - no 
         more, no less, in the same order.
         """
         batch_size:         int =               4
@@ -82,7 +82,7 @@ class TestCurriculumBatchComposition:
                                                     cache_dir =     tmp_path / "ranks"
                                                 )
 
-        # Build DatasetMetrics — loads the same data written by the fixture.
+        # Build DatasetMetrics - loads the same data written by the fixture.
         dataset_metrics:    DatasetMetrics =    build_dataset_metrics(
                                                     synthetic_scores_path,
                                                     len(synthetic_scores)
@@ -197,7 +197,7 @@ class TestCurriculumBatchComposition:
     ) -> None:
         """Every Sample Should Appear Exactly Once Across All Batches.
 
-        The curriculum is a complete partition of the training set — no sample is skipped and no 
+        The curriculum is a complete partition of the training set - no sample is skipped and no 
         sample appears in more than one batch.
         """
         batch_size:         int =               4
@@ -241,7 +241,7 @@ class TestCurriculumBatchComposition:
     ) -> None:
         """Weighted Rank First Batch Should Match First batch_size Weighted Ranked Indices.
 
-        Repeats the core regression test with the weighted rank — the rank that was at the center 
+        Repeats the core regression test with the weighted rank - the rank that was at the center 
         of the original regression investigation.
         """
         batch_size:         int =               4
@@ -379,5 +379,5 @@ class TestCurriculumScopeBatchWise:
 
         # Assert that the two orderings differ.
         assert  holistic_indices != batch_wise_indices, \
-                "Holistic and batch-wise scopes produced identical orderings — " \
+                "Holistic and batch-wise scopes produced identical orderings - " \
                 "they are mathematically distinct and should differ."

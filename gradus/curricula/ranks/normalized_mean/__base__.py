@@ -23,7 +23,7 @@ class NormalizedMean(Rank):
     Ranks samples by the equal-weighted mean of min-max normalized metric
     columns. Metrics tagged as inverted in the registry are flipped
     (1 - normalized) so that all columns align on a unified scale where
-    higher = more complex. Samples are sorted ascending — lowest mean
+    higher = more complex. Samples are sorted ascending - lowest mean
     complexity score first.
     """
 
@@ -93,6 +93,6 @@ class NormalizedMean(Rank):
         # Compute equal-weighted mean across all columns as the composite score.
         composite:      Series =    normalized.mean(axis = 1)
 
-        # Sort ascending — lowest composite score = simplest samples first.
+        # Sort ascending - lowest composite score = simplest samples first.
         return  self._scores_.assign(composite = composite) \
                 .sort_values("composite")["index"].tolist()

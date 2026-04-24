@@ -18,7 +18,7 @@ class UncertaintySchedule(Schedule):
     """# Uncertainty-Peak Curriculum Pacing Schedule
 
     Reorders all curriculum batches each epoch so that the batches with the highest
-    mean softmax entropy — where the model is currently most uncertain — are presented
+    mean softmax entropy - where the model is currently most uncertain - are presented
     first. All batches are seen every epoch; only their order changes.
 
     Motivation:
@@ -34,7 +34,7 @@ class UncertaintySchedule(Schedule):
         confused about a batch (dynamic, updated each epoch).
 
     Design guarantees:
-        - All batches are seen every epoch — DSI is always 0.0.
+        - All batches are seen every epoch - DSI is always 0.0.
         - During cold start, batches are presented in natural curriculum order.
         - After cold start, batches are sorted by descending mean softmax entropy.
         - Smoothing is applied across adjacent batches before sorting.
@@ -55,7 +55,7 @@ class UncertaintySchedule(Schedule):
             * total_samples     (int):      Total number of training samples.
             * total_epochs      (int):      Total number of training epochs.
             * batch_size        (int):      Number of samples per batch.
-            * start_fraction    (float):    Unused — kept for CLI consistency with other schedules.
+            * start_fraction    (float):    Unused - kept for CLI consistency with other schedules.
                                             Defaults to 0.3.
             * smooth_window     (int):      Number of adjacent batches to average entropy values
                                             over before sorting. Defaults to 5.
@@ -104,7 +104,7 @@ class UncertaintySchedule(Schedule):
     ) -> List[int]:
         """# Compute Uncertainty-Peak Batch Ordering for Current Epoch.
 
-        Returns all batch indices sorted by descending mean softmax entropy — most
+        Returns all batch indices sorted by descending mean softmax entropy - most
         uncertain batches first. Falls back to natural curriculum order during cold
         start or when entropy history is unavailable.
 

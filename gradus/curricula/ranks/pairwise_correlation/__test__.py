@@ -266,7 +266,7 @@ class TestPairwiseCorrelationOrder:
         """
         n = 10
 
-        # Construct perfectly correlated metrics — all agree on difficulty.
+        # Construct perfectly correlated metrics - all agree on difficulty.
         scores: DataFrame = DataFrame({
             "index":    list(range(n)),
             "class":    ["a"] * n,

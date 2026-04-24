@@ -85,7 +85,7 @@ class PairwiseCorrelation(Rank):
             if col in self._metric_:
                 normalized[:, self._metric_.index(col)] = 1.0 - normalized[:, self._metric_.index(col)]
 
-        # Center each row and L2-normalize — enables Pearson via dot product.
+        # Center each row and L2-normalize - enables Pearson via dot product.
         centered:   NDArray =    normalized - normalized.mean(axis = 1, keepdims = True)
         norms:      NDArray =    norm(centered, axis = 1, keepdims = True)
 
@@ -129,7 +129,7 @@ class PairwiseCorrelation(Rank):
             # Write cached wi back.
             W[i] = wi
 
-        # Sort ascending by weight — low weight = easy/simple.
+        # Sort ascending by weight - low weight = easy/simple.
         ranked_order:   NDArray =    argsort(W)
 
         # Map back to original sample indices.

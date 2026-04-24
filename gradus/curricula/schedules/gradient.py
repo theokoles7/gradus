@@ -18,7 +18,7 @@ class GradientSchedule(Schedule):
     """# Gradient-Peak Curriculum Pacing Schedule
 
     Reorders all curriculum batches each epoch so that the batches with the highest
-    mean gradient norm — where the model is currently most confounded — are presented
+    mean gradient norm - where the model is currently most confounded - are presented
     first. All batches are seen every epoch; only their order changes.
 
     Information-theoretic motivation:
@@ -28,7 +28,7 @@ class GradientSchedule(Schedule):
         easier samples afterward.
 
     Design guarantees:
-        - All batches are seen every epoch — DSI is always 0.0.
+        - All batches are seen every epoch - DSI is always 0.0.
         - During cold start, batches are presented in natural curriculum order.
         - After cold start, batches are sorted by descending mean gradient norm.
         - Smoothing is applied across adjacent batches before sorting.
@@ -49,7 +49,7 @@ class GradientSchedule(Schedule):
             * total_samples     (int):      Total number of training samples.
             * total_epochs      (int):      Total number of training epochs.
             * batch_size        (int):      Number of samples per batch.
-            * start_fraction    (float):    Unused — kept for CLI consistency with other schedules.
+            * start_fraction    (float):    Unused - kept for CLI consistency with other schedules.
                                             Defaults to 0.3.
             * smooth_window     (int):      Number of adjacent batches to average gradient norms
                                             over before sorting. Defaults to 5.
@@ -98,7 +98,7 @@ class GradientSchedule(Schedule):
     ) -> List[int]:
         """# Compute Gradient-Peak Batch Ordering for Current Epoch.
 
-        Returns all batch indices sorted by descending mean gradient norm — most
+        Returns all batch indices sorted by descending mean gradient norm - most
         confounding batches first. Falls back to natural curriculum order during
         cold start or when gradient history is unavailable.
 

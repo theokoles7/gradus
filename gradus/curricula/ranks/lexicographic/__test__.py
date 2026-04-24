@@ -127,7 +127,7 @@ class TestLexicographicOrder:
     """# Ordering Tests
 
     The core mathematical guarantee: samples are sorted by the first metric, then by the second
-    metric where the first is tied, then by the third where the first two are tied, and so on —
+    metric where the first is tied, then by the third where the first two are tied, and so on -
     exactly as a dictionary sort works.
     """
 
@@ -166,7 +166,7 @@ class TestLexicographicOrder:
     ) -> None:
         """Where Primary Metric Values are Equal, Secondary Metric Should be Non-Decreasing.
 
-        This is the defining property of lexicographic ordering — tie-breaking by successive
+        This is the defining property of lexicographic ordering - tie-breaking by successive
         metrics. If it fails, the rank is just sorting by the primary metric and ignoring the rest.
         """
         # Construct scores where primary metric has deliberate ties.
@@ -234,7 +234,7 @@ class TestLexicographicOrder:
 
         # Assert identical ordering.
         assert  lexico == ascending, \
-                "Single-metric lexicographic ordering differs from ascending — " \
+                "Single-metric lexicographic ordering differs from ascending - " \
                 "these must be equivalent."
 
     def test_metric_order_affects_ranking(self,
@@ -243,7 +243,7 @@ class TestLexicographicOrder:
         """Swapping Metric Priority Should Produce a Different Ordering.
 
         If [A, B] and [B, A] produce identical orderings, the secondary metric is having no
-        effect — which would mean tie-breaking is broken.
+        effect - which would mean tie-breaking is broken.
         """
         # Construct scores with ties on both metrics to ensure priority matters.
         scores: DataFrame = DataFrame({
@@ -267,9 +267,9 @@ class TestLexicographicOrder:
                                     tmp_path / "ba"
                                 )
 
-        # The two orderings must differ — metric priority must matter.
+        # The two orderings must differ - metric priority must matter.
         assert  order_ab != order_ba, \
-                "Swapping metric priority produced identical ordering — " \
+                "Swapping metric priority produced identical ordering - " \
                 "secondary metric appears to have no effect."
 
     def test_three_metric_ordering(self,
@@ -302,19 +302,19 @@ class TestLexicographicOrder:
             a, b = indices[pos], indices[pos + 1]
 
             if p1[a] == p1[b] and p2[a] == p2[b]:
-                # Both primary and secondary are tied — tertiary must break the tie.
+                # Both primary and secondary are tied - tertiary must break the tie.
                 assert  p3[a] <= p3[b], \
                         f"Tertiary tie-breaking violated at position {pos}: " \
                         f"edge-density {p3[a]:.4f} > {p3[b]:.4f} " \
                         f"(indices {a} → {b})"
             elif p1[a] == p1[b]:
-                # Primary is tied — secondary must break the tie.
+                # Primary is tied - secondary must break the tie.
                 assert  p2[a] <= p2[b], \
                         f"Secondary tie-breaking violated at position {pos}: " \
                         f"color-variance {p2[a]:.4f} > {p2[b]:.4f} " \
                         f"(indices {a} → {b})"
             else:
-                # Primary is not tied — it must be non-decreasing.
+                # Primary is not tied - it must be non-decreasing.
                 assert  p1[a] <= p1[b], \
                         f"Primary ordering violated at position {pos}: " \
                         f"saturation-time {p1[a]:.4f} > {p1[b]:.4f} " \

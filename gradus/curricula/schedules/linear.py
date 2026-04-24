@@ -84,7 +84,7 @@ class LinearSchedule(Schedule):
 
         ## Args:
             * epoch     (int):  Current epoch (1-indexed).
-            * **metrics (Any):  Ignored — linear schedule is purely epoch-driven.
+            * **metrics (Any):  Ignored - linear schedule is purely epoch-driven.
 
         ## Returns:
             * List[int]:    Batch indices [0..end] in natural curriculum order.

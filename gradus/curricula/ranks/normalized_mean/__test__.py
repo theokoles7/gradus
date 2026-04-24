@@ -227,7 +227,7 @@ class TestNormalizedMeanOrder:
         """Single Non-Inverted Metric Should Produce Identical Order to Ascending.
 
         NormalizedMean with one non-inverted metric is mathematically equivalent to a plain
-        ascending sort — min-max normalization preserves rank order, equal weighting is trivial
+        ascending sort - min-max normalization preserves rank order, equal weighting is trivial
         with one metric, and no inversion is applied.
         """
         from gradus.curricula.ranks.ascending import Ascending
@@ -250,7 +250,7 @@ class TestNormalizedMeanOrder:
 
         # Assert identical ordering.
         assert  nm == ascending, \
-                "Single-metric NormalizedMean ordering differs from ascending — " \
+                "Single-metric NormalizedMean ordering differs from ascending - " \
                 "these must be equivalent."
 
     def test_inverted_metric_flips_contribution(self,
@@ -267,7 +267,7 @@ class TestNormalizedMeanOrder:
                                     "inverted-metric":  [float(n - 1 - i) for i in range(n)],
                                 })
 
-        # Without inversion, the two metrics are mirrors — composite is flat (0.5 for all).
+        # Without inversion, the two metrics are mirrors - composite is flat (0.5 for all).
         flat:       Series =    compute_normalized_mean(
                                     scores,
                                     ["normal-metric", "inverted-metric"],
@@ -278,7 +278,7 @@ class TestNormalizedMeanOrder:
         assert flat.nunique() == 1, \
             "Without inversion, mirrored metrics should produce a flat composite."
 
-        # With inversion applied to the inverted metric, they reinforce — composite is strictly
+        # With inversion applied to the inverted metric, they reinforce - composite is strictly
         # increasing, matching the order of the normal metric.
         ordered:    Series =    compute_normalized_mean(
                                     scores,
@@ -347,7 +347,7 @@ class TestNormalizedMeanOrder:
             "constant":     [5.0] * n,
         })
 
-        # Load indices — should not raise.
+        # Load indices - should not raise.
         indices:    List[int] = normalized_mean_indices(
                                     scores, tmp_path, metric=["varying", "constant"]
                                 )
