@@ -1,6 +1,6 @@
 [gradus](https://github.com/theokoles7/gradus/blob/main/README.md) / [documentation](../../README.md) / [curricula](../README.md) / [ranks](./README.md) / pairwise-correlation
 
-# Pairwise Correlation
+# Pairwise Correlation Rank
 
 ## Definition
 
