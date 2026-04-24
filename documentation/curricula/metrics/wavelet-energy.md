@@ -4,7 +4,7 @@
 
 ## Definition
 
-The wavelet energy metric measures the total energy distributed across the detail subbands of a wavelet-decomposed image. Applying a discrete wavelet transform (DWT) to an image decomposes it into approximation and detail components at multiple scales. The energy concentrated in the detail subbands — horizontal, vertical, and diagonal — reflects the presence of edges, textures, and fine structure. Images with high wavelet energy are structurally complex and carry more high-frequency information, making them more difficult for a model to learn from early in training.
+The wavelet energy metric measures the total energy distributed across the detail subbands of a wavelet-decomposed image. Applying a discrete wavelet transform (DWT) to an image decomposes it into approximation and detail components at multiple scales. The energy concentrated in the detail subbands - horizontal, vertical, and diagonal - reflects the presence of edges, textures, and fine structure. Images with high wavelet energy are structurally complex and carry more high-frequency information, making them more difficult for a model to learn from early in training.
 
 ## Formula
 
@@ -26,9 +26,9 @@ $$WE_{\text{norm}} = \frac{WE}{N}$$
 
 | Value         | Interpretation                                                            |
 |---------------|---------------------------------------------------------------------------|
-| Low $WE$      | Smooth image — energy concentrated in approximation band; little detail   |
-| Moderate $WE$ | Structured image — meaningful edges and textures present                  |
-| High $WE$     | Complex image — rich multi-scale detail; energy spread across subbands    |
+| Low $WE$      | Smooth image - energy concentrated in approximation band; little detail   |
+| Moderate $WE$ | Structured image - meaningful edges and textures present                  |
+| High $WE$     | Complex image - rich multi-scale detail; energy spread across subbands    |
 
 Range is $[0, \infty)$; normalized values are bounded by the square of the maximum pixel intensity.
 

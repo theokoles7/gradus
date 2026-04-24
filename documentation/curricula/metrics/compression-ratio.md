@@ -18,9 +18,9 @@ A value of $CR = 1$ indicates no compressibility (maximum complexity); values $C
 
 | Value             | Interpretation                                                        |
 |-------------------|-----------------------------------------------------------------------|
-| $CR \approx 1$    | Highly complex — little to no redundancy; resists compression         |
-| $1 < CR < 3$      | Moderate complexity — some spatial structure or pattern               |
-| $CR \geq 3$       | Low complexity — high redundancy; uniform regions or simple patterns  |
+| $CR \approx 1$    | Highly complex - little to no redundancy; resists compression         |
+| $1 < CR < 3$      | Moderate complexity - some spatial structure or pattern               |
+| $CR \geq 3$       | Low complexity - high redundancy; uniform regions or simple patterns  |
 
 The range is $[1, \infty)$ in theory, though natural images typically fall in the range $[1, 5]$.
 

@@ -4,7 +4,7 @@
 
 ## Definition
 
-The edge density metric measures the proportion of pixels in an image that are classified as edges. Edges correspond to sharp transitions in pixel intensity — boundaries between objects, texture gradients, or fine structural detail. Images with many edges tend to be visually complex and informationally rich, making them harder for a model to learn from early in training. Edge density is computed by applying a gradient-based or threshold-based edge detector and counting the resulting edge pixels relative to the total image area.
+The edge density metric measures the proportion of pixels in an image that are classified as edges. Edges correspond to sharp transitions in pixel intensity - boundaries between objects, texture gradients, or fine structural detail. Images with many edges tend to be visually complex and informationally rich, making them harder for a model to learn from early in training. Edge density is computed by applying a gradient-based or threshold-based edge detector and counting the resulting edge pixels relative to the total image area.
 
 ## Formula
 
@@ -22,9 +22,9 @@ where $G_x$ and $G_y$ are the horizontal and vertical gradient responses respect
 
 | Value             | Interpretation                                                        |
 |-------------------|-----------------------------------------------------------------------|
-| $\approx 0$       | Smooth, uniform image — very few edges; low structural complexity     |
-| $0.1$–$0.3$       | Moderate structure — distinct objects or clear boundaries             |
-| $> 0.3$           | High complexity — dense textures, fine detail, or busy scenes         |
+| $\approx 0$       | Smooth, uniform image - very few edges; low structural complexity     |
+| $0.1$–$0.3$       | Moderate structure - distinct objects or clear boundaries             |
+| $> 0.3$           | High complexity - dense textures, fine detail, or busy scenes         |
 
 Range is $[0, 1]$, representing the fraction of pixels identified as edges.
 

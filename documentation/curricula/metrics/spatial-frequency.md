@@ -4,7 +4,7 @@
 
 ## Definition
 
-The spatial frequency metric quantifies the rate of intensity variation across an image by measuring the average magnitude of pixel-level gradients. Images dominated by low spatial frequencies contain slow, smooth transitions — solid regions or gentle gradients. Images with high spatial frequencies exhibit rapid changes — sharp edges, fine textures, and intricate patterns. As a difficulty measure, spatial frequency captures the density of fine-grained information that a model must resolve to correctly classify or represent the image.
+The spatial frequency metric quantifies the rate of intensity variation across an image by measuring the average magnitude of pixel-level gradients. Images dominated by low spatial frequencies contain slow, smooth transitions - solid regions or gentle gradients. Images with high spatial frequencies exhibit rapid changes - sharp edges, fine textures, and intricate patterns. As a difficulty measure, spatial frequency captures the density of fine-grained information that a model must resolve to correctly classify or represent the image.
 
 ## Formula
 
@@ -22,9 +22,9 @@ $$SF = \sqrt{RF^2 + CF^2}$$
 
 | Value         | Interpretation                                                |
 |---------------|---------------------------------------------------------------|
-| Low $SF$      | Smooth image — uniform regions, slow intensity transitions    |
-| Moderate $SF$ | Structured image — distinct features, clear edges             |
-| High $SF$     | Complex image — dense texture, fine detail, rapid variation   |
+| Low $SF$      | Smooth image - uniform regions, slow intensity transitions    |
+| Moderate $SF$ | Structured image - distinct features, clear edges             |
+| High $SF$     | Complex image - dense texture, fine detail, rapid variation   |
 
 Range is $[0, \infty)$, though practical values for natural images are bounded by the maximum pixel intensity difference per step.
 

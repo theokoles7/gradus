@@ -4,7 +4,7 @@
 
 ## Definition
 
-Time-to-convergence is a model-informed difficulty metric that measures how many training iterations a model requires before its loss on a given sample stabilizes. Unlike intrinsic metrics that assess image properties independently of any model, TTC captures difficulty as experienced by a specific network — a sample is considered hard if the model's per-sample loss takes many iterations to stop decreasing meaningfully. Samples that converge quickly are well-handled early in training; samples that converge slowly represent persistent challenges that may benefit from delayed or repeated presentation.
+Time-to-convergence is a model-informed difficulty metric that measures how many training iterations a model requires before its loss on a given sample stabilizes. Unlike intrinsic metrics that assess image properties independently of any model, TTC captures difficulty as experienced by a specific network - a sample is considered hard if the model's per-sample loss takes many iterations to stop decreasing meaningfully. Samples that converge quickly are well-handled early in training; samples that converge slowly represent persistent challenges that may benefit from delayed or repeated presentation.
 
 TTC is estimated by training a lightweight proxy model on individual samples (or small batches) and measuring the iteration at which the per-sample loss falls within a tolerance $\epsilon$ of a stable minimum and remains there.
 
@@ -24,9 +24,9 @@ $$\text{TTC}(x) \approx \min \left\{ t : \left| \hat{\mathcal{L}}^{(t)} - \hat{\
 
 | Value         | Interpretation                                                                        |
 |---------------|---------------------------------------------------------------------------------------|
-| Low TTC       | Easy sample — model loss stabilizes quickly; well within the model's current capacity |
-| Moderate TTC  | Typical sample — requires meaningful training signal before converging                |
-| High TTC      | Hard sample — loss remains unstable for many iterations; persistent difficulty        |
+| Low TTC       | Easy sample - model loss stabilizes quickly; well within the model's current capacity |
+| Moderate TTC  | Typical sample - requires meaningful training signal before converging                |
+| High TTC      | Hard sample - loss remains unstable for many iterations; persistent difficulty        |
 
 Range is $[1, T_{\max}]$ where $T_{\max}$ is the maximum number of iterations allowed. Samples that never meet the convergence criterion within $T_{\max}$ are assigned $\text{TTC} = T_{\max}$.
 

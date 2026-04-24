@@ -4,7 +4,7 @@
 
 ## Definition
 
-Time-to-saturation is a model-informed difficulty metric that measures how many training iterations a self-supervised autoencoder requires before its reconstruction error on a given sample reaches a minimum and stops improving. Where time-to-convergence tracks loss stabilization, TTS specifically tracks the point of *saturation* — when further training yields no meaningful reduction in reconstruction error. Samples that saturate quickly are easy to reconstruct and thus low in structural complexity; samples that saturate slowly contain detail that the model struggles to faithfully reproduce, indicating high difficulty.
+Time-to-saturation is a model-informed difficulty metric that measures how many training iterations a self-supervised autoencoder requires before its reconstruction error on a given sample reaches a minimum and stops improving. Where time-to-convergence tracks loss stabilization, TTS specifically tracks the point of *saturation* - when further training yields no meaningful reduction in reconstruction error. Samples that saturate quickly are easy to reconstruct and thus low in structural complexity; samples that saturate slowly contain detail that the model struggles to faithfully reproduce, indicating high difficulty.
 
 TTS is estimated using a lightweight autoencoder trained in a self-supervised fashion on individual samples. The metric is task-agnostic and label-free, making it applicable to any image dataset without requiring class annotations.
 
@@ -24,9 +24,9 @@ with early stopping applied when $\mathcal{R}^{(t)}(x) - \mathcal{R}^{(t-1)}(x) 
 
 | Value         | Interpretation                                                                            |
 |---------------|-------------------------------------------------------------------------------------------|
-| Low TTS       | Easy sample — reconstruction error drops and saturates quickly; low structural complexity |
-| Moderate TTS  | Typical sample — autoencoder requires moderate training to achieve good reconstruction    |
-| High TTS      | Hard sample — reconstruction remains poor for many iterations; high structural complexity |
+| Low TTS       | Easy sample - reconstruction error drops and saturates quickly; low structural complexity |
+| Moderate TTS  | Typical sample - autoencoder requires moderate training to achieve good reconstruction    |
+| High TTS      | Hard sample - reconstruction remains poor for many iterations; high structural complexity |
 
 Range is $[1, T_{\max}]$. Samples that never saturate within $T_{\max}$ iterations are assigned $\text{TTS} = T_{\max}$.
 

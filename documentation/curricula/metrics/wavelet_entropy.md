@@ -4,7 +4,7 @@
 
 ## Definition
 
-The wavelet entropy metric measures the disorder or unpredictability in how energy is distributed across the subbands of a wavelet-decomposed image. Where wavelet energy measures the total magnitude of detail coefficients, wavelet entropy measures how evenly that energy is spread. An image whose energy is concentrated in a single subband (e.g. one dominant edge orientation) has low entropy. An image whose energy is spread uniformly across many subbands — indicating complex, multi-scale, multi-directional structure — has high entropy. Wavelet entropy therefore captures a qualitatively different aspect of difficulty than wavelet energy alone.
+The wavelet entropy metric measures the disorder or unpredictability in how energy is distributed across the subbands of a wavelet-decomposed image. Where wavelet energy measures the total magnitude of detail coefficients, wavelet entropy measures how evenly that energy is spread. An image whose energy is concentrated in a single subband (e.g. one dominant edge orientation) has low entropy. An image whose energy is spread uniformly across many subbands - indicating complex, multi-scale, multi-directional structure - has high entropy. Wavelet entropy therefore captures a qualitatively different aspect of difficulty than wavelet energy alone.
 
 ## Formula
 
@@ -26,9 +26,9 @@ $$H_{W,\text{norm}} = \frac{H_W}{H_{\max}}$$
 
 | Value                     | Interpretation                                                                |
 |---------------------------|-------------------------------------------------------------------------------|
-| $H_W \approx 0$           | Energy concentrated in one subband — simple, directionally uniform structure  |
-| Moderate $H_W$            | Partial spread — some multi-scale complexity                                  |
-| $H_W \approx H_{\max}$    | Energy uniformly distributed — rich, complex, multi-scale image               |
+| $H_W \approx 0$           | Energy concentrated in one subband - simple, directionally uniform structure  |
+| Moderate $H_W$            | Partial spread - some multi-scale complexity                                  |
+| $H_W \approx H_{\max}$    | Energy uniformly distributed - rich, complex, multi-scale image               |
 
 Normalized range is $[0, 1]$, where $1$ indicates maximum complexity in the wavelet domain.
 
