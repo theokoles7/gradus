@@ -45,10 +45,12 @@ setup(
     version =                       get_version(),
     author =                        (
                                         "Gabriel C. Trahan,"
+                                        "MD Mustakin Alam,"
                                         "Kameron P. Duhon"
                                     ),
     author_email =                  (
                                         "gabriel.trahan1@louisiana.edu,"
+                                        "md-mustakin.alam@louisiana.edu",
                                         "kameron.duhon1@louisiana.edu"
                                     ),
     description =                   """Experiments in quantifying image complexity and determining 
@@ -62,6 +64,7 @@ setup(
     packages =                      find_packages(),
     python_requires =               ">=3.10",
     install_requires =              [
+                                        "changeset",
                                         "matplotlib",
                                         "numpy",
                                         "opencv-python",
