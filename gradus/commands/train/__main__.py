@@ -150,22 +150,24 @@ def train_entry_point(
             # Initialize per-batch signal accumulators.
             batch_std_rows:     List[Dict] =                []
             batch_grad_norm:    List[Dict] =                []
+            batch_entropy_rows: List[Dict] =                []
 
             # Place network in training mode.
             network.train(); progress_bar.set_postfix(status = f"Training")
 
-            # Extract curriculum indices.
+            # Extract curriculum batch index mapping for this epoch.
             curriculum_indices: List[int] = (
                                                 dataset.curriculum.batch_indices
                                                 if dataset.curriculum is not None
                                                 else None
-            )
-            
-            # print(f"len(curriculum_indices): {len(curriculum_indices) if curriculum_indices else None}")
-            # print(f"len(dataset.train_loader): {len(dataset.train_loader)}")
+                                            )
 
             # For each batch in the training dataset...
             for b, (samples, targets) in enumerate(dataset.train_loader):
+
+                # Resolve actual curriculum batch index (loop counter b may differ
+                # from curriculum position when schedule reorders batches).
+                actual_idx: int = curriculum_indices[b] if curriculum_indices is not None else b
 
                 # Place samples and targets on device.
                 samples, targets =          samples.to(device), targets.to(device)
@@ -182,6 +184,14 @@ def train_entry_point(
 
                 # Update metric trackers.
                 train_total_loss +=         loss.item()
+
+                # Capture softmax entropy before argmax overwrites predictions.
+                from torch.nn.functional import softmax as _softmax
+                _probs:         Tensor =    _softmax(predictions.detach(), dim=1)
+                _entropy:       Tensor =    -(_probs * _probs.log().clamp(min=-1e9)).sum(dim=1)
+                _mean_entropy:  float =     _entropy.mean().item()
+                batch_entropy_rows.append({"batch_idx": actual_idx, "mean_entropy": _mean_entropy})
+
                 _, predictions =            predictions.max(dim = 1)
                 train_correct +=            predictions.eq(targets).sum().item()
                 train_total +=              targets.size(0)
@@ -203,9 +213,6 @@ def train_entry_point(
                     # Compute mean of L2 norm.
                     mean_grad_norm: float =         sum(grad_norms) / len(grad_norms) \
                                                     if grad_norms else 0.0
-                    
-                    # Use original curriculum batch index, not loop counter.
-                    actual_idx: int = curriculum_indices[b] if curriculum_indices is not None else b
                     
                     # Accumulate records.
                     batch_std_rows.append( {"batch_idx": b, "mean_std":       mean_std})
@@ -278,13 +285,20 @@ def train_entry_point(
             std_df =        None
             grad_norm_df =  None
 
+        # Build entropy DataFrame regardless of adaptive flag — uncertainty schedule
+        # uses softmax entropy which is available from every forward pass.
+        from pandas import DataFrame
+        entropy_df: DataFrame = DataFrame(batch_entropy_rows).set_index("batch_idx") \
+                                if batch_entropy_rows else DataFrame()
+
         # Advance curriculum pacing schedule.
         dataset.step(
             epoch =         epoch,
             loss =          train_loss,
             val_acc =       val_accuracy,
             std_df =        std_df,
-            grad_norm_df =  grad_norm_df
+            grad_norm_df =  grad_norm_df,
+            entropy_df =    entropy_df
         )
 
     # Save model weights.
