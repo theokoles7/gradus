@@ -64,7 +64,6 @@ setup(
     packages =                      find_packages(),
     python_requires =               ">=3.10",
     install_requires =              [
-                                        "changeset",
                                         "matplotlib",
                                         "numpy",
                                         "opencv-python",
