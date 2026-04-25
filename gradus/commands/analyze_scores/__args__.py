@@ -34,7 +34,6 @@ class AnalyzeScoresConfig(CommandConfig):
         """
         parser.add_argument(
             "dataset-scores-path",
-            type =      str,
-            help =      """Identifier of dataset whose metric distributions are being 
-                        calculated."""
+            type =  str,
+            help =  """Identifier of dataset whose metric distributions are being calculated."""
         )

@@ -5,11 +5,11 @@ Main process entry point for score-dataset command.
 
 __all__ = ["score_dataset_entry_point"]
 
-from pathlib                                    import Path
-from typing                                     import Any, Dict, List, Set, Union
+from pathlib                                import Path
+from typing                                 import Any, Dict, List, Set, Union
 
-from gradus.commands.score_dataset.__args__     import ScoreDatasetConfig
-from gradus.registration                        import register_command
+from gradus.commands.score_dataset.__args__ import ScoreDatasetConfig
+from gradus.registration                    import register_command
 
 @register_command(
     id =        "score-dataset",
@@ -107,22 +107,31 @@ def score_dataset_entry_point(
         ):   
 
             # Determine which metrics still need computing for this sample.
-            to_compute: List[str] = [m for m in scheduled if i in unscored[m]]
+            to_compute: List[str] =         [m for m in scheduled if i in unscored[m]]
     
             # If nothing to compute for this sample, move on.
             if not to_compute: continue
     
             # Unpack sample & label.
-            sample: Tensor =            dataset.train_data[i][0]
-            label:  Any =               dataset.train_data[i][1]
+            sample:     Tensor =            dataset.train_data[i][0]
+            label:      Any =               dataset.train_data[i][1]
     
             # Compute each outstanding metric for this sample.
-            row:    Dict[str, Any] =    {}
+            row:        Dict[str, Any] =    {}
     
+            # For each metric that needs to be computed...
             for metric_id in to_compute:
+
+                # Compute metric.
                 try:    row[metric_id] = METRIC_REGISTRY.get_entry(metric_id).cls(sample).value
+
+                # Should an error occur...
                 except Exception as e:
+
+                    # Record the metric as NAN.
                     row[metric_id] = float("nan")
+
+                    # Simply warn, for continuity.
                     logger.warning(f"Metric '{metric_id}' failed for sample {i}: {e}")
     
             # Record row.

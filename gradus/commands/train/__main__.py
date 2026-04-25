@@ -167,7 +167,7 @@ def train_entry_point(
 
                 # Resolve actual curriculum batch index (loop counter b may differ
                 # from curriculum position when schedule reorders batches).
-                actual_idx: int = curriculum_indices[b] if curriculum_indices is not None else b
+                actual_idx: int =   curriculum_indices[b] if curriculum_indices is not None else b
 
                 # Place samples and targets on device.
                 samples, targets =          samples.to(device), targets.to(device)

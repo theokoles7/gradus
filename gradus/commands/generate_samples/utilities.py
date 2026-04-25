@@ -9,10 +9,7 @@ __all__ =   [
             ]
 
 from typing         import Dict, Tuple
-
-from numpy          import array, indices, uint8, where
-from numpy.typing   import NDArray
-from PIL.Image      import fromarray, Image
+from PIL.Image      import Image
 
 
 # COLORS ===========================================================================================
@@ -44,6 +41,10 @@ def make_checkerboard(
     ## Returns:
         * Image:    Checkerboard image.
     """
+    from numpy          import array, indices, uint8, where
+    from numpy.typing   import NDArray
+    from PIL.Image      import fromarray
+
     # Define row, column coordinates.
     rows, cols =            indices((size, size))
 

@@ -24,7 +24,8 @@ def analyze_scores_entry_point(
     """# Analyze Metric Distributions for a Score Dataset.
 
     ## Args:
-        * dataset_id    (str):          Identifier of dataset whose metric distributions are being calculated.
+        * dataset_id    (str):          Identifier of dataset whose metric distributions are being 
+                                        calculated.
         * output_path   (str | Path):   Directory under which results will be written. Defaults to 
                                         "./analysis/datasets/".
 
@@ -53,13 +54,10 @@ def analyze_scores_entry_point(
         ).strip().lower() not in ["n", "no"]:
             
             # Import process.
-            from gradus.commands.score_dataset.__main__ import score_dataset_entry_point
+            from gradus.commands.score_dataset  import score_dataset
 
             # Score dataset.
-            score_dataset_entry_point(
-                dataset_id =    dataset_id,
-                output_path =   output_dir
-            )
+            score_dataset(dataset_id = dataset_id,  output_path = output_dir)
 
         # Otherwise, simply exit.
         else: logger.info(f"Aborting operation..."); exit()

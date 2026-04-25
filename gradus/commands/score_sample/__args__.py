@@ -4,7 +4,7 @@ Argument definitions & parsing for score-sample command.
 """
 
 from argparse               import ArgumentParser
-from typing                 import List, override
+from typing                 import override
 
 from gradus.configuration   import CommandConfig
 

@@ -3,7 +3,7 @@
 Argument definitions & parsing for train command.
 """
 
-from argparse               import ArgumentParser, _SubParsersAction
+from argparse               import ArgumentParser
 from typing                 import override
 
 from gradus.configuration   import CommandConfig
@@ -32,6 +32,7 @@ class TrainConfig(CommandConfig):
         ## Args:
             * parser    (ArgumentParser):   Parser to whom arguments will be attributed.
         """
+        from argparse               import _SubParsersAction
         from gradus.registration    import NETWORK_REGISTRY
         
         parser.add_argument(
