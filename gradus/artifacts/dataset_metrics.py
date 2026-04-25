@@ -5,16 +5,17 @@ Data structure implementation for storing dataset metric scores & statistics.
 
 __all__ = ["DatasetMetrics"]
 
-from logging    import Logger
 from pathlib    import Path
 from typing     import Dict, List, Optional, Union
 
-from pandas     import DataFrame, read_parquet, Series
+from pandas     import DataFrame, Series
 
 class DatasetMetrics():
     """# Dataset Metrics
-    
-    Dataset metric scores & statistics.
+
+    Stores and manages per-sample difficulty metric scores for a single dataset split. Scores are 
+    persisted to a Parquet file keyed by dataset ID and seed, allowing expensive model-informed 
+    metrics to be computed once and reused across runs.
     """
 
     # Define meta (non-metric) columns.
@@ -37,10 +38,11 @@ class DatasetMetrics():
             * scores_path   (str | Path):   Path at which dataset scores will be written/managed. 
                                             Defaults to "./.cache/scores".
         """
+        from logging            import Logger
         from gradus.utilities   import get_logger
 
         # Initialize logger.
-        self.__logger__:    Logger =    get_logger(f"{dataset_id}-metrics")
+        self.__logger__:    Logger =                get_logger(f"{dataset_id}-metrics")
 
         # Define properties.
         self._dataset_id_:  str =                   dataset_id
@@ -178,6 +180,8 @@ class DatasetMetrics():
 
     def _load_(self) -> None:
         """# Load Metrics."""
+        from pandas import read_parquet
+
         # If path already exists, load scores from file.
         if self.scores_path.exists(): self._scores_ = read_parquet(self.scores_path); return
 
@@ -188,10 +192,14 @@ class DatasetMetrics():
         from gradus.registration    import METRIC_REGISTRY
 
         # Create scores data frame.
-        self._scores_ = DataFrame(
-                            {
-                                "index": range(self._num_samples_),
-                                "class": None,
-                                **{metric: float("nan") for metric in METRIC_REGISTRY.list_entries()}
-                            }
-                        )
+        self._scores_:  DataFrame = DataFrame(
+                                        {
+                                            "index": range(self._num_samples_),
+                                            "class": None,
+                                            **{
+                                                metric: float("nan")
+                                                for metric
+                                                in METRIC_REGISTRY.list_entries()
+                                            }
+                                        }
+                                    )

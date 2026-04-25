@@ -5,16 +5,11 @@ Training results map structure & utility.
 
 __all__ = ["TrainingRecord"]
 
-from functools          import cached_property
-from hashlib            import md5
-from json               import dumps
-from logging            import Logger
-from pathlib            import Path
-from typing             import Any, Dict, List, Optional, Union
+from functools  import cached_property
+from pathlib    import Path
+from typing     import Any, Dict, List, Optional, Union
 
-from torch              import device as t_device
-
-from gradus.utilities   import get_logger
+from torch      import device as t_device
 
 class TrainingRecord():
     """# Training Data Record Keeping"""
@@ -42,6 +37,10 @@ class TrainingRecord():
             * cache_path        (str | Path):       Path at which training artifacts will be cached. 
                                                     Defaults to "./.cache/".
         """
+        from logging            import Logger
+
+        from gradus.utilities   import get_logger
+
         # Initialize logger.
         self.__logger__:        Logger =            get_logger("train-record")
 
@@ -159,6 +158,9 @@ class TrainingRecord():
     @cached_property
     def hash(self) -> str:
         """# Unique Hash of Training Variables"""
+        from hashlib    import md5
+        from json       import dumps
+
         return  md5(dumps({
                     "network":  self._network_config_,
                     "dataset":  self._dataset_config_,
