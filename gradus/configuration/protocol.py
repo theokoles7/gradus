@@ -84,8 +84,8 @@ class Config(ABC):
         """# Parse Defined Arguments.
 
         ## Args:
-            * args      (Sequence[str] | None): Sequence of system arguments. Defaults to None.
-            * namespace (Namespace | None):     Previously parsed arguments name space. Defaults to None.
+            * args      (Sequence[str] | None): Sequence of system arguments.
+            * namespace (Namespace | None):     Previously parsed arguments name space.
 
         ## Returns:
             * Namespace:    Name space of arguments/values that were known by the parser.

@@ -5,7 +5,7 @@ Dataset configuration & parsing handler implementation.
 
 __all__ = ["DatasetConfig"]
 
-from argparse                       import _ArgumentGroup, ArgumentParser
+from argparse                       import ArgumentParser
 from typing                         import override
 
 from gradus.configuration.protocol  import Config
@@ -43,6 +43,7 @@ class DatasetConfig(Config):
         ## Args:
             * parser    (ArgumentParser):   Parser to whom arguments will be attributed.
         """
+        from argparse               import _ArgumentGroup
         from gradus.registration    import METRIC_REGISTRY, RANK_REGISTRY, SCHEDULE_REGISTRY
 
         # GENERAL ----------------------------------------------------------------------------------

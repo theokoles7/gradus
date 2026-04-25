@@ -5,7 +5,7 @@ Neural network configuration & argument parsing hander implementation.
 
 __all__ = ["NetworkConfig"]
 
-from argparse                       import _ArgumentGroup, ArgumentParser, _SubParsersAction
+from argparse                       import ArgumentParser
 from typing                         import override
 
 from gradus.configuration.protocol  import Config
@@ -42,7 +42,9 @@ class NetworkConfig(Config):
         ## Args:
             * parser    (ArgumentParser):   Parser to whom arguments will be attributed.
         """
-        from gradus.registration            import DATASET_REGISTRY
+        from argparse               import _ArgumentGroup, _SubParsersAction
+
+        from gradus.registration    import DATASET_REGISTRY
         
         # ARTIFACTS --------------------------------------------------------------------------------
         artifacts:  _ArgumentGroup =    parser.add_argument_group(

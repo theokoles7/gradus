@@ -24,10 +24,7 @@ class MetricConfig(Config):
             * help  (str):  Description of sample metric.
         """
         # Initialize configuration.
-        super(MetricConfig, self).__init__(
-            parser_id =         name,
-            parser_help =       help
-        )
+        super(MetricConfig, self).__init__(parser_id = name, parser_help = help)
 
     # HELPERS ======================================================================================
 
