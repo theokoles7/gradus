@@ -12,7 +12,6 @@ from torch                                                          import devic
 
 from gradus.curricula.metrics.complexity.color_variance.__args__    import ColorVarianceConfig
 from gradus.registration                                            import register_metric
-from gradus.utilities                                               import determine_device
 
 @register_metric(
     id =        "color-variance",
@@ -32,6 +31,8 @@ class ColorVariance():
             * sample    (Tensor):       Sample whose color variance is being measured.
             * device    (str | device): Torch computation device. Defaults to "auto".
         """
+        from gradus.utilities   import determine_device
+        
         # Define properties.
         self._device_:  t_device =  determine_device(device)
         self._sample_:  Tensor =    sample.to(self._device_)
