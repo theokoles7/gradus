@@ -5,13 +5,13 @@ Main process entry point for train command.
 
 __all__ = ["train_entry_point"]
 
-from pathlib                            import Path
-from typing                             import Any, Dict, List, Literal, Union
+from pathlib                        import Path
+from typing                         import Any, Dict, List, Literal, Union
 
-from torch                              import device as t_device
+from torch                          import device as t_device
 
-from gradus.commands.train.__args__     import TrainConfig
-from gradus.registration                import register_command
+from gradus.commands.train.__args__ import TrainConfig
+from gradus.registration            import register_command
 
 @register_command(
     id =        "train",
@@ -48,7 +48,6 @@ def train_entry_point(
         * Dict[str, Any]:   Training results.
     """
     from logging                    import Logger
-    from pathlib                    import Path
 
     from torch                      import no_grad, Tensor
     from torch.nn.functional        import cross_entropy
