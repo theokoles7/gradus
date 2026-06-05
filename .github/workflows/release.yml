@@ -28,16 +28,8 @@ jobs:
       - name: Release
         run: semversioner release
 
-      - name: Diagnose
-        run: |
-          echo "=== git status ==="
-          git status
-          echo "=== .semversioner contents ==="
-          find .semversioner -type f
-          echo "=== CHANGELOG.md exists? ==="
-          ls -la CHANGELOG.md 2>/dev/null || echo "CHANGELOG.md not found"
-          echo "=== current version ==="
-          semversioner current-version
+      - name: Generate changelog
+        run: semversioner changelog > CHANGELOG.md
 
       - name: Read version
         id: version
@@ -47,7 +39,7 @@ jobs:
 
       - name: Update pyproject.toml version
         run: |
-          sed -i "s/^version = .*/version = \"${{ steps.version.outputs.version }}\"/" pyproject.toml
+          sed -i "s/^version\s*=\s*.*/version =           \"${{ steps.version.outputs.version }}\"/" pyproject.toml
 
       - name: Commit & Tag
         run: |
