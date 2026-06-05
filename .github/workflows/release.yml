@@ -25,11 +25,11 @@ jobs:
       - name: Install dependencies
         run: pip install semversioner
 
-      - name: Release
-        run: semversioner release
-
       - name: Generate changelog
         run: semversioner changelog > CHANGELOG.md
+
+      - name: Release
+        run: semversioner release
 
       - name: Read version
         id: version
