@@ -60,7 +60,7 @@ jobs:
         run: |
           sed -i "s/^version\s*=\s*.*/version =           \"${{ steps.version.outputs.version }}\"/" pyproject.toml
 
-      - name: Commit & Tag
+      - name: Commit
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -70,6 +70,9 @@ jobs:
             exit 1
           fi
           git commit -m "Release v${{ steps.version.outputs.version }}"
+
+      - name: Tag & Push
+        run: |
           git tag "v${{ steps.version.outputs.version }}"
           git push --follow-tags
 
