@@ -31,12 +31,6 @@ dependencies =      [
                         "tqdm",
                     ]
 
-[project.optional-dependencies]
-dev =               [
-                        "pytest",
-                        "semversioner",
-                    ]
-
 classifiers =       [
                         "Topic :: Scientific/Engineering :: Artificial Intelligence",
                         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -47,6 +41,12 @@ classifiers =       [
                         "Programming Language :: Python :: 3.11",
                         "Programming Language :: Python :: 3.12",
                         "Programming Language :: Python :: 3.13",
+                    ]
+
+[project.optional-dependencies]
+dev =               [
+                        "pytest",
+                        "semversioner",
                     ]
 
 [project.urls]
