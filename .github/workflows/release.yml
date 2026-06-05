@@ -28,9 +28,6 @@ jobs:
       - name: Release
         run: semversioner release
 
-      - name: Generate changelog
-        run: semversioner changelog > CHANGELOG.md
-
       - name: Read version
         id: version
         run: |
