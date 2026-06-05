@@ -6,7 +6,7 @@ for model in resnet-18 resnet-34 resnet-50 resnet-101; do
 
     for dataset in cifar-10 cifar-100; do
 
-        time gradus train --epochs 100 $model $dataset --rank weighted --metric saturation-time
+        time gradus train --epochs 100 $model $dataset --rank weighted --metric wavelet-energy
 
         # time gradus train $model $dataset --rank weighted --metric saturation-time --schedule linear
     
