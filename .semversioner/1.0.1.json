@@ -1,0 +1,14 @@
+{
+  "changes": [
+    {
+      "description": "Fix changelog maintenance",
+      "type": "patch"
+    },
+    {
+      "description": "Fix changelog maintenance",
+      "type": "patch"
+    }
+  ],
+  "created_at": "2026-06-05T18:20:13+00:00",
+  "version": "1.0.1"
+}
