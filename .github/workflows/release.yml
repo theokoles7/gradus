@@ -28,6 +28,17 @@ jobs:
       - name: Release
         run: semversioner release
 
+      - name: Diagnose
+        run: |
+          echo "=== git status ==="
+          git status
+          echo "=== .semversioner contents ==="
+          find .semversioner -type f
+          echo "=== CHANGELOG.md exists? ==="
+          ls -la CHANGELOG.md 2>/dev/null || echo "CHANGELOG.md not found"
+          echo "=== current version ==="
+          semversioner current-version
+
       - name: Read version
         id: version
         run: |
@@ -43,6 +54,10 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add CHANGELOG.md .semversioner/ pyproject.toml
+          if git diff --staged --quiet; then
+            echo "ERROR: semversioner produced no changes to commit"
+            exit 1
+          fi
           git commit -m "Release v${{ steps.version.outputs.version }}"
           git tag "v${{ steps.version.outputs.version }}"
           git push --follow-tags
