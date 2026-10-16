@@ -64,6 +64,7 @@ class Weighted(Rank):
         ## Returns:
             * List[int]:    Ranked indices.
         """
+        from numpy  import sign
         from pandas import Series
 
         # Identify all numeric columns excluding index.
@@ -87,9 +88,12 @@ class Weighted(Rank):
         weights:        Series =    correlations.abs()
         weights =                   weights / weights.sum()
 
+        # Sign-correct each auxiliary metric's z-score before weighting
+        signed_aux:     DataFrame = normalized[weights.index].mul(sign(correlations))
+
         # Compute weighted composite score (anchor gets weight 1.0, others are relative).
         composite:      Series =    normalized[self._metric_[0]] + \
-                                    normalized[weights.index].mul(weights).sum(axis = 1)
+                                    signed_aux.mul(weights).sum(axis = 1)
         
         # Assign composite score and sort.
         return                      self._scores_.assign(composite = composite) \
