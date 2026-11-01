@@ -27,5 +27,5 @@ results/
 *.csv
 
 # Scratch files
-*scratch*
+# *scratch*
 .test/
