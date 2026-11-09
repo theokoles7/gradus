@@ -11,6 +11,19 @@ way per sample. Per-sample criteria (measured on each sample's own training pass
     bpas        |change| of that statistic between its last two observed epochs (B-PAS rule per sample)
     Unseen samples (linear) are probed with a forward pass only (counted as 1/3 of a training pass).
 
+--schedule lifecycle (sample unit only): every sample has its own lifecycle instead of following a global curve.
+    introduce   training starts on a random --life-start share; each epoch, at least
+                (unseen at start) / --life-intro unseen samples - and as many as were just pruned - are
+                introduced, choosing among a probed pool (2 x needed) those the model already gives the highest
+                probability to their label ("learnable now").
+    prune       a sample correct on --life-k consecutive training passes is retired (learned).
+    review      a retired sample is re-checked by a forward pass (1/3 cost) after an interval that starts at
+                --life-r0 epochs and doubles every time it is still correct (spaced repetition);
+    revive      if a check finds it misclassified (forgotten), it returns to training.  --no-revive disables
+                review & revival (ablation). If fewer than --life-floor of the samples are active, the retired
+                samples due soonest are revived without a check.
+    Savings are whatever the lifecycle produces; fixed shapes are then matched to them (--matched-fmin).
+
 Trains <network> on <dataset> over a FIXED partition of the training set into mini-batches (contents
 fixed per seed, order reshuffled every epoch), so every batch has an identity whose learning signals
 can be tracked across epochs. The number of active batches follows a pacing schedule; a batch-level
@@ -91,7 +104,8 @@ CONFIG_KEYS:    List[str] = [
                                 "dyn_delta", "dyn_gain", "dyn_step_min", "dyn_step_max"
                             ]
 # Keys added in stage 2: they enter the run hash only when non-default (stage-1 run IDs unchanged).
-EXTRA_DEFAULTS: Dict =      {"delta_start": 0.0, "delta_end": 0.0, "unit": "batch"}
+EXTRA_DEFAULTS: Dict =      {"delta_start": 0.0, "delta_end": 0.0, "unit": "batch",
+                             "life_start": 0.0, "life_k": 0, "life_r0": 0, "life_intro": 0, "life_floor": 0.0, "life_revive": False}
 ACC_WINDOW:     int =       5           # (sample unit) epochs averaged for per-sample accuracy
 PROBE_COST:     float =     1 / 3       # (sample unit) forward-only probe, relative to a training pass
 UNSEEN, ACTIVE, RETIRED = 0, 1, 2
@@ -114,7 +128,7 @@ def parse_arguments(argv: Optional[List[str]] = None) -> Namespace:
 
     p.add_argument("--unit",            type = str,     default = "batch",  choices = ["batch", "sample"])
     p.add_argument("--schedule",        type = str,     default = "full",
-                   choices = ["full", "linear", "prune", "sine", "cosine", "inv-cosine", "dynamic", "bpas"])
+                   choices = ["full", "linear", "prune", "sine", "cosine", "inv-cosine", "dynamic", "bpas", "lifecycle"])
     p.add_argument("--f-min",           type = float,   default = 0.5)
     p.add_argument("--f-max",           type = float,   default = 1.0)
     p.add_argument("--cycles",          type = float,   default = 1.0)
@@ -127,6 +141,12 @@ def parse_arguments(argv: Optional[List[str]] = None) -> Namespace:
 
     p.add_argument("--delta-start",     type = float,   default = 1e-6, help = "(bpas) delta_s.")
     p.add_argument("--delta-end",       type = float,   default = 5e-5, help = "(bpas) delta_e.")
+    p.add_argument("--life-start",      type = float,   default = 0.5,  help = "(lifecycle) share of samples active at epoch 1.")
+    p.add_argument("--life-k",          type = int,     default = 3,    help = "(lifecycle) consecutive correct passes = learned.")
+    p.add_argument("--life-r0",         type = int,     default = 2,    help = "(lifecycle) first review interval, epochs.")
+    p.add_argument("--life-intro",      type = int,     default = 30,   help = "(lifecycle) epochs over which all unseen samples are introduced.")
+    p.add_argument("--life-floor",      type = float,   default = 0.2,  help = "(lifecycle) minimum active share.")
+    p.add_argument("--no-revive",       action = "store_true", help = "(lifecycle) no review / revival (ablation).")
     p.add_argument("--dyn-window",      type = int,     default = 3)
     p.add_argument("--dyn-delta",       type = float,   default = 0.01)
     p.add_argument("--dyn-gain",        type = float,   default = 1.0)
@@ -134,6 +154,9 @@ def parse_arguments(argv: Optional[List[str]] = None) -> Namespace:
     p.add_argument("--dyn-step-max",    type = float,   default = 0.05)
 
     p.add_argument("--matched-fmin",    action = "store_true", help = "Print the prune/linear f_min matching this (recorded) run's compute.")
+    p.add_argument("--save-stats",      action = "store_true",
+                   help = "Also save each unit's per-epoch activation statistic to runs/<run_id>_stats.npz (re-runs a "
+                          "recorded configuration once if its stats file is missing; the result row is not duplicated).")
     p.add_argument("--summarize",       action = "store_true")
     args = p.parse_args(argv)
 
@@ -153,6 +176,13 @@ def parse_arguments(argv: Optional[List[str]] = None) -> Namespace:
         args.dyn_window = 0;    args.dyn_delta = args.dyn_gain = args.dyn_step_min = args.dyn_step_max = 0.0
     if args.schedule == "dynamic" and args.criterion == "random":
         p.error("--schedule dynamic needs a criterion for its direction signal")
+    if args.schedule == "lifecycle":
+        if args.unit != "sample":               p.error("--schedule lifecycle is defined per sample: pass --unit sample")
+        args.criterion, args.f_min, args.f_max, args.probe = "accuracy", 1.0, 1.0, 0.0     # decisions use correctness
+        args.life_revive = not args.no_revive
+        if args.life_start >= 1:                args.life_intro = 0
+    else:
+        args.life_start, args.life_k, args.life_r0, args.life_intro, args.life_floor, args.life_revive = 0.0, 0, 0, 0, 0.0, False
     return args
 
 def run_config(args: Namespace) -> Dict:
@@ -242,6 +272,42 @@ def update_membership(status: np.ndarray, target: int, key: Optional[np.ndarray]
         status[chosen] = RETIRED;   moved["retired"] += len(chosen)
     return moved
 
+def lifecycle_step(status: np.ndarray, streak: np.ndarray, review_at: np.ndarray, interval: np.ndarray, epoch: int,
+                   args: Namespace, rng: np.random.Generator, unseen_start: int,
+                   probe: Callable[[np.ndarray], tuple]) -> Dict[str, int]:
+    """# One epoch of the per-sample lifecycle (before training): prune learned samples, review retired ones
+    and revive the forgotten, introduce learnable unseen samples, enforce the active floor.
+    `probe(indices)` returns (correct, true-class probability) from a forward pass."""
+    n =         len(status)
+    moved =     {"introduced": 0, "revived": 0, "retired": 0, "probed": 0, "reviewed": 0}
+
+    learned =   (status == ACTIVE) & (streak >= args.life_k)
+    status[learned] = RETIRED;  interval[learned] = args.life_r0;  review_at[learned] = epoch + args.life_r0
+    moved["retired"] = int(learned.sum())
+
+    if args.life_revive:
+        due =   np.flatnonzero((status == RETIRED) & (review_at <= epoch) & ~learned)
+        if len(due):
+            correct, _ = probe(due);    moved["probed"] += len(due);    moved["reviewed"] = len(due)
+            forgot =    due[~correct.astype(bool)];   kept = due[correct.astype(bool)]
+            status[forgot] = ACTIVE;    streak[forgot] = 0;     moved["revived"] += len(forgot)
+            interval[kept] *= 2;        review_at[kept] = epoch + interval[kept]
+
+    unseen =    np.flatnonzero(status == UNSEEN)
+    if len(unseen) and args.life_intro > 0:
+        need =  min(len(unseen), max(moved["retired"], int(np.ceil(unseen_start / args.life_intro))))
+        pool =  rng.choice(unseen, size = min(len(unseen), 2 * need), replace = False)
+        _, p_true = probe(pool);    moved["probed"] += len(pool)
+        chosen = pool[np.argsort(-p_true, kind = "stable")[:need]]
+        status[chosen] = ACTIVE;    streak[chosen] = 0;     moved["introduced"] = len(chosen)
+
+    short =     int(np.ceil(args.life_floor * n)) - int((status == ACTIVE).sum())
+    if short > 0:
+        retired = np.flatnonzero(status == RETIRED)
+        back =  retired[np.argsort(review_at[retired], kind = "stable")[:short]]
+        status[back] = ACTIVE;      streak[back] = 0;       moved["revived"] += len(back)
+    return moved
+
 def activation_delta(act: np.ndarray, epoch: int) -> np.ndarray:
     """# Per-batch |change| of the activation statistic between its last two OBSERVED epochs (NaN if < 2)."""
     obs =       act[:, :epoch]
@@ -276,7 +342,7 @@ def activation_cv(act: np.ndarray, epoch: int, window: int) -> np.ndarray:
 
 # TRAINING =========================================================================================
 
-def run(args: Namespace, run_id: str, out_dir: Path) -> Dict:
+def run(args: Namespace, run_id: str, out_dir: Path, rerun: bool = False) -> Dict:
     """# Train One Configuration."""
     from torch                      import Generator, arange, no_grad, randperm, stack, tensor
     from torch.nn.functional        import cross_entropy, softmax
@@ -380,6 +446,20 @@ def run(args: Namespace, run_id: str, out_dir: Path) -> Dict:
         network.train()
         return out
 
+    def probe_lifecycle(candidates):
+        """Forward-only check (eval mode): (correct, probability of the given label) per sample."""
+        network.eval();     corr_out = np.empty(len(candidates));   p_out = np.empty(len(candidates))
+        with no_grad():
+            for k in range(0, len(candidates), 512):
+                part =      candidates[k:k + 512]
+                xs, ys =    zip(*[train[i] for i in part])
+                x, y =      stack(list(xs)).to(device), tensor(ys).to(device)
+                prob =      softmax(network(x), dim = 1)
+                corr_out[k:k + len(part)] = prob.argmax(dim = 1).eq(y).float().cpu().numpy()
+                p_out[k:k + len(part)] =    prob[arange(len(y), device = y.device), y].cpu().numpy()
+        network.train()
+        return corr_out, p_out
+
     def probe(candidates):
         """Measure unseen batches without updating the model (eval mode; gradients discarded)."""
         network.eval();     out = np.empty(len(candidates))
@@ -394,6 +474,10 @@ def run(args: Namespace, run_id: str, out_dir: Path) -> Dict:
         network.train()
         return out
 
+    streak =                np.zeros(U, dtype = np.int64)          # (lifecycle) consecutive correct passes
+    review_at =             np.zeros(U, dtype = np.int64)
+    interval =              np.zeros(U, dtype = np.int64)
+    unseen_start =          0
     history =               []
     processed =             0.0
     f =                     args.f_max
@@ -406,6 +490,12 @@ def run(args: Namespace, run_id: str, out_dir: Path) -> Dict:
         moved =             {"introduced": 0, "revived": 0, "retired": 0, "probed": 0}
         if args.schedule == "full":
             status[:] =     ACTIVE
+        elif args.schedule == "lifecycle":
+            if epoch == 1:
+                start =     rng.choice(U, size = int(round(min(1.0, args.life_start) * U)), replace = False)
+                status[start] = ACTIVE;     unseen_start = int((status == UNSEEN).sum())
+            else:
+                moved =     lifecycle_step(status, streak, review_at, interval, epoch, args, rng, unseen_start, probe_lifecycle)
         elif args.schedule == "bpas":
             if epoch == 1: status[:] = ACTIVE
             elif epoch >= 3:        # prune after epoch i = epoch - 1, using the change from epoch i - 1 to i
@@ -423,6 +513,7 @@ def run(args: Namespace, run_id: str, out_dir: Path) -> Dict:
                                               args.probe)
         sampler.active =    np.flatnonzero(status == ACTIVE)
         processed +=        moved["probed"] * (PROBE_COST if sample_unit else args.batch_size)   # batch probe = forward + backward
+        moved.setdefault("reviewed", 0)
 
         network.train();    correct = seen = 0
         for x, y, idx in tqdm(loader, desc = f"[{run_id}] epoch {epoch}/{E}", leave = False):
@@ -433,6 +524,7 @@ def run(args: Namespace, run_id: str, out_dir: Path) -> Dict:
                 c, g, a =   measure_samples(x, y)
                 optimizer.step()
                 corr[i, epoch - 1], grad[i], act[i, epoch - 1] = c, g, a
+                streak[i] = np.where(c > 0, streak[i] + 1, 0)
                 correct +=  int(c.sum())
             else:
                 b =         batch_of[int(idx[0])]
@@ -495,7 +587,9 @@ def run(args: Namespace, run_id: str, out_dir: Path) -> Dict:
                                 "wall_minutes": (time() - started) / 60,
                             }
     (out_dir / "runs").mkdir(parents = True, exist_ok = True)
-    with open(out_dir / "runs" / f"{run_id}.json", "w") as fh: dump({**result, "history": history}, fh, indent = 2)
+    if not rerun:   # a stats-only re-run keeps the original run record
+        with open(out_dir / "runs" / f"{run_id}.json", "w") as fh: dump({**result, "history": history}, fh, indent = 2)
+    if args.save_stats: np.savez_compressed(out_dir / "runs" / f"{run_id}_stats.npz", act = act.astype(np.float32), status = status)
     return result
 
 # RESULTS I/O ======================================================================================
@@ -519,6 +613,13 @@ def summarize(out_dir: Path) -> str:
     full =      df[df["schedule"] == "full"]
     full_s =    full.groupby(["unit", "seed"])["final_acc"].mean()
     methods =   df[df["schedule"] != "full"].copy()
+    # Lifecycle variants get their own row names: full lifecycle, and the ablations without pacing / revival.
+    if "life_start" in methods:
+        ls =    methods["life_start"].fillna(0.0);  rv = methods["life_revive"].fillna(False).astype(str).str.lower().eq("true")
+        life =  methods["schedule"] == "lifecycle"
+        lk =    methods["life_k"].fillna(0).astype(int)
+        methods.loc[life, "schedule"] = [f"lifecycle-k{k}" + ("" if s0 < 1 else "-nopace") + ("" if r else "-norevive")
+                                         for s0, r, k in zip(ls[life], rv[life], lk[life])]
     methods["vs_full"] = [a - full_s.get((u, sd), np.nan) for u, sd, a in zip(methods["unit"], methods["seed"], methods["final_acc"])]
 
     # Seed-paired difference vs. the prune-only / pacing-only run with the same criterion, seed and
@@ -533,7 +634,7 @@ def summarize(out_dir: Path) -> str:
             vals.append(r["final_acc"] - c.loc[(c["compute"] - r["compute"]).abs().idxmin(), "final_acc"] if len(c) else np.nan)
         methods[f"vs_{ref}"] = vals
 
-    order =     {"bpas": 0, "prune": 0, "linear": 1, "sine": 2, "cosine": 3, "inv-cosine": 4, "dynamic": 5}
+    order =     {"bpas": 0, "prune": 0, "linear": 1, "sine": 2, "cosine": 3, "inv-cosine": 4, "dynamic": 5, "lifecycle": 6}
     agg =       methods.groupby(["unit", "criterion", "schedule", "f_min"], dropna = False).agg(
                     n =             ("seed", "count"),
                     test_acc =      ("final_acc", "mean"),
@@ -544,7 +645,7 @@ def summarize(out_dir: Path) -> str:
                     vs_linear =     ("vs_linear", "mean"),
                     dir_changes =   ("direction_changes", "mean"),
                 ).reset_index()
-    agg["_o"] = agg["schedule"].map(order)
+    agg["_o"] = agg["schedule"].map(lambda x: order.get(x, 6 if x.startswith("lifecycle") else 9))
     agg =       agg.sort_values(["unit", "criterion", "_o", "f_min"]).drop(columns = "_o")
     for c in ("test_acc", "std", "vs_full", "savings", "vs_prune", "vs_linear"): agg[c] = (100 * agg[c]).round(2)
     agg.loc[agg["schedule"] != "dynamic", "dir_changes"] = np.nan
@@ -582,12 +683,15 @@ def main() -> None:
         print(f"{max(0.0, 2 * load(open(rec))['compute'] - 1):.3f}"); return
 
     results =   out_dir / "results.csv"
-    if results.exists() and run_id in set(load_results(results)["run_id"]):
+    recorded =  results.exists() and run_id in set(load_results(results)["run_id"])
+    stats =     out_dir / "runs" / f"{run_id}_stats.npz"
+    if recorded and not (args.save_stats and not stats.exists()):
         print(f"[{run_id}] Already recorded; skipping.  ({config})"); return
+    if recorded: print(f"[{run_id}] Recorded, but re-running once to save per-unit statistics to {stats.name}.")
 
     print(f"[{run_id}] {config}")
-    result =    run(args, run_id, out_dir)
-    append_result(results, result)
+    result =    run(args, run_id, out_dir, rerun = recorded)
+    if not recorded: append_result(results, result)
     print(f"[{run_id}] final acc = {result['final_acc']:.4f}; best = {result['best_acc']:.4f}; savings = {result['savings']:.3f}")
 
 if __name__ == "__main__": main()
